@@ -3950,13 +3950,15 @@ async function generateDeepReport() {
       Object.assign(mergedData, d2);
 
       console.log('[KS] 3호출 시작 (5장)');
-      const d3 = await callClaude(prompt3, '5장');
+      const d3 = await callClaude(prompt3, '5장', 1200);
       Object.assign(mergedData, d3);
 
       console.log('[KS] 전체 필드:', Object.keys(mergedData));
 
       // 렌더링
-      if (Object.keys(mergedData).length > 0) {
+      // 1장 또는 4장이라도 있으면 렌더링
+      const hasData = mergedData.agentAnalysis || mergedData.positionDeepAnalysis || mergedData.strength;
+      if (hasData) {
         renderDeepReport(mergedData, m, p, pg);
       } else {
         renderFallbackDeepReport(m, p, pg);
@@ -3992,13 +3994,13 @@ async function generateDeepReport() {
 
 
 // Claude API 호출 헬퍼 (generateDeepReport에서 사용)
-async function callClaude(promptText, label) {
+async function callClaude(promptText, label, maxTokens) {
   const resp = await fetch('/.netlify/functions/claude', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 800,
+      max_tokens: maxTokens || 800,
       system: '당신은 생체역학(biomechanics) 전문 지식을 갖춘 FIFA 공인 에이전트다. 선수의 관절 각도, 속도 패턴, 좌우 비대칭 데이터를 해석해 실전 플레이와 부상 위험을 연결하는 것이 당신의 특기다. 절대 일반론을 쓰지 않는다. 모든 문장은 제공된 수치 데이터에 근거해야 한다. 한국어. ~이다/~한다 체. 존댓말 금지.',
       messages: [{ role: 'user', content: promptText }]
     })
