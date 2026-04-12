@@ -1260,6 +1260,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
     <div class="deep-loading-ring"></div>
     <div class="deep-loading-title">심층 분석 중</div>
     <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;">AI 스카우트가 FIFA 기준으로 분석합니다</p>
+    <p style="font-size:11px;color:rgba(255,255,255,.25);margin-bottom:16px;letter-spacing:1px;">보고서 작성에는 1~3분 정도 소요됩니다</p>
     <div class="deep-loading-steps">
       <div class="deep-step active" id="dstep0"><div class="deep-step-dot"></div><div class="deep-step-text">에이전트가 FIFA 사무국에 달려가는 중...</div></div>
       <div class="deep-step" id="dstep1"><div class="deep-step-dot"></div><div class="deep-step-text">AI와 에이전트가 박터지게 의논하는 중...</div></div>
@@ -3897,7 +3898,7 @@ async function generateDeepReport() {
   showScreen('deepLoading');
 
   const steps = ['dstep0','dstep1','dstep2','dstep3'];
-  const stepDelay = [18000, 40000, 40000, 40000];
+  const stepDelay = [20000, 50000, 50000, 50000];
 
   for (let i = 0; i < steps.length; i++) {
     document.getElementById(steps[i]).className = 'deep-step active';
@@ -3917,20 +3918,20 @@ async function generateDeepReport() {
       const dataContext = buildDataContext(m, p, pg, lastScore);
       const mergedData = {};
 
-      // ── 1호출: 에이전트 종합 판단 (1장 핵심) ────────────────
+      // ── 1호출: 핵심 진단 + 에이전트 판단 ──────────────────
       const prompt1 = dataContext + '\n\n' +
         '아래 필드만 JSON으로 출력해라. 백틱 없이.\n' +
         '{\n' +
-        '  "recommendPos": "추천 포지션 코드(ST/LW/CM 등)",\n' +
+        '  "recommendPos": "추천 포지션 코드",\n' +
         '  "currentReason": "현재 포지션 핵심 문제. 2문장.",\n' +
         '  "recommendReason": "추천 포지션 이유. 2문장.",\n' +
-        '  "agentAnalysis": "에이전트 종합 판단. 반드시 아래 구조로 써라.\n[3줄 요약]\n①강점: (수치 근거로 한 문장)\n②문제: (수치 근거로 한 문장)\n③판단: (추천/비추천 여부 명확히)\n\n[상세 분석]\n각 수치가 실전 경기 어떤 장면에서 문제가 되는지 구체적으로. 자기진술과 데이터 모순 있으면 지적. 600-700자.",\n' +
         '  "strength": "강점 한 단어",\n' +
-        '  "strengthDesc": "이 강점이 경기 어떤 장면에서 발휘되는지→동나이대 아마추어 중 어느 수준인지→발전 가능한 포지션/레벨. 반드시 5문장 이상.",\n' +
+        '  "strengthDesc": "이 강점이 경기 어떤 장면에서 발휘되는지. 3문장.",\n' +
         '  "weakness": "약점 한 단어",\n' +
-        '  "weaknessDesc": "이 약점이 실전 어떤 순간에 문제가 되는지→동나이대 평균보다 얼마나 부족한지→방치하면 어떤 결과가 오는지. 반드시 5문장 이상.",\n' +
+        '  "weaknessDesc": "이 약점이 실전 어떤 순간에 문제가 되는지→방치 시 결과. 3문장.",\n' +
         '  "action": "지금 당장 가장 먼저 해야 할 것",\n' +
-        '  "actionDesc": "영상에서 관찰된 구체적 패턴→왜 이것이 가장 먼저인지→5장 훈련 플랜과 어떻게 연결되는지. 반드시 5문장 이상."\n' +
+        '  "actionDesc": "왜 이것이 가장 먼저인지. 3문장.",\n' +
+        '  "agentAnalysis": "에이전트 종합 판단. [3줄요약: ①강점 ②문제 ③추천여부]. 수치 기반 상세 서술. 400자 내외."\n' +
         '}';
 
       // ── 2호출: 신체역학 분석 (관절/부상 위험) ────────────────
