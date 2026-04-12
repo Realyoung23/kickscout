@@ -3967,7 +3967,7 @@ async function generateDeepReport() {
 
       // 렌더링
       // 1장 또는 4장이라도 있으면 렌더링
-      const hasData = mergedData.agentAnalysis || mergedData.positionDeepAnalysis || mergedData.strength;
+      const hasData = Object.keys(mergedData).length > 0;
       if (hasData) {
         renderDeepReport(mergedData, m, p, pg);
       } else {
@@ -4003,6 +4003,72 @@ async function generateDeepReport() {
 }
 
 
+
+// 잘린 JSON에서도 완성된 필드를 추출
+function extractPartialJSON(text, label) {
+  const result = {};
+  // 백틱 제거
+  const clean = text.replace(/```json|```/g, '').trim();
+
+  // 1. 완성된 JSON이면 바로 파싱
+  const fullMatch = clean.match(/\{[\s\S]*\}/);
+  if (fullMatch) {
+    try {
+      const parsed = JSON.parse(fullMatch[0]);
+      console.log('[KS] ' + label + ' 완전 파싱 성공. 필드:', Object.keys(parsed));
+      return parsed;
+    } catch(e) {
+      // 잘린 경우 아래에서 처리
+    }
+  }
+
+  // 2. 잘린 JSON — 필드별로 하나씩 추출
+  // 문자열 필드: "key": "value"
+  const strPattern = /"(\w+)"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
+  let m;
+  while ((m = strPattern.exec(clean)) !== null) {
+    result[m[1]] = m[2].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+  }
+
+  // 배열 필드: "key": [ ... ]
+  // training, weekPlan 등
+  const arrayKeys = ['training', 'weekPlan'];
+  arrayKeys.forEach(key => {
+    const startIdx = clean.indexOf('"' + key + '"');
+    if (startIdx < 0) return;
+    const arrStart = clean.indexOf('[', startIdx);
+    if (arrStart < 0) return;
+
+    // 완성된 객체만 추출
+    const items = [];
+    let depth = 0, objStart = -1;
+    for (let i = arrStart; i < clean.length; i++) {
+      if (clean[i] === '{') {
+        if (depth === 0) objStart = i;
+        depth++;
+      } else if (clean[i] === '}') {
+        depth--;
+        if (depth === 0 && objStart >= 0) {
+          try {
+            const item = JSON.parse(clean.slice(objStart, i + 1));
+            items.push(item);
+          } catch(e) {}
+          objStart = -1;
+        }
+      }
+    }
+    if (items.length > 0) result[key] = items;
+  });
+
+  const keys = Object.keys(result);
+  if (keys.length > 0) {
+    console.log('[KS] ' + label + ' 부분 파싱 성공. 필드:', keys);
+  } else {
+    console.warn('[KS] ' + label + ' 파싱 실패 — 내용:', clean.slice(0, 200));
+  }
+  return result;
+}
+
 // Claude API 호출 헬퍼 (generateDeepReport에서 사용)
 async function callClaude(promptText, label, maxTokens) {
   try {
@@ -4024,10 +4090,7 @@ async function callClaude(promptText, label, maxTokens) {
     const text = result.content?.[0]?.text || '';
     console.log('[KS] ' + label + ' 전체응답:', text);
     console.log('[KS] ' + label + ' usage:', JSON.stringify(result.usage));
-    const clean = text.replace(/```json|```/g,'').trim();
-    const match = clean.match(/\{[\s\S]*\}/);
-    if (!match) { console.warn('[KS] ' + label + ' JSON 없음'); return {}; }
-    return JSON.parse(match[0]);
+    return extractPartialJSON(text, label);
   } catch(e) {
     console.warn('[KS] ' + label + ' 실패:', e.message);
     return {};
