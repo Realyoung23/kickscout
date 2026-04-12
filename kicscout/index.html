@@ -3909,7 +3909,7 @@ async function generateDeepReport() {
   showScreen('deepLoading');
 
   const steps = ['dstep0','dstep1','dstep2','dstep3'];
-  const stepDelay = [8000, 35000, 35000, 35000];
+  const stepDelay = [18000, 40000, 40000, 40000];
 
   for (let i = 0; i < steps.length; i++) {
     document.getElementById(steps[i]).className = 'deep-step active';
@@ -4014,11 +4014,18 @@ async function generateDeepReport() {
             _playerName: p.name,
             _age: p.age
           });
+          var reportStr = JSON.stringify(saveData);
+          // btoa로 base64 인코딩 — URL 내 # 등 특수문자 문제 방지
+          var reportB64;
+          try { reportB64 = btoa(unescape(encodeURIComponent(reportStr.slice(0, 3500)))); }
+          catch(e) { reportB64 = btoa(reportStr.replace(/[^ -]/g, '?').slice(0, 3500)); }
           var rParams = new URLSearchParams({
             action: 'saveReport', code: lastCode,
             name: p.name, score: lastScore, grade: gradeOf(lastScore),
-            reportJson: JSON.stringify(saveData).slice(0, 4000)
+            reportJson: reportB64,
+            encoded: 'base64'
           });
+          console.log('[KS] 보고서 저장. 코드:', lastCode, '원본크기:', reportStr.length);
           fetch(APPS_SCRIPT_URL + '?' + rParams.toString(), { mode: 'no-cors' });
         } catch(se) { console.warn('saveReport 실패:', se); }
       }
