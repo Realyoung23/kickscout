@@ -3815,20 +3815,36 @@ async function startPayment() {
   // ── 입력값 비정상 감지 ──
   const _h = parseInt(document.getElementById('heightInput')?.value)||0;
   const _w = parseInt(document.getElementById('weightInput')?.value)||0;
-  if (_h > 0 && _w > 0 && _a > 0) {
-    const bmi = _w / Math.pow(_h/100, 2);
+  {
     const warnings = [];
-    if (_a < 15 && _h > 190) warnings.push('나이 ' + _a + '세에 키 ' + _h + 'cm');
-    if (_a < 15 && _w > 100) warnings.push('나이 ' + _a + '세에 몸무게 ' + _w + 'kg');
-    if (bmi > 40) warnings.push('BMI ' + bmi.toFixed(1) + ' (몸무게 ' + _w + 'kg / 키 ' + _h + 'cm)');
-    if (bmi < 13) warnings.push('BMI ' + bmi.toFixed(1) + ' — 너무 가볍습니다');
-    if (_h > 220) warnings.push('키 ' + _h + 'cm');
-    if (_w > 180) warnings.push('몸무게 ' + _w + 'kg');
-    if (_a > 60) warnings.push('나이 ' + _a + '세');
+    // 나이 단독 체크
+    if (_a > 0 && _a < 5) warnings.push('나이 ' + _a + '세 (너무 어립니다)');
+    if (_a > 65) warnings.push('나이 ' + _a + '세');
+    // 키 단독 체크
+    if (_h > 0 && _h > 230) warnings.push('키 ' + _h + 'cm');
+    if (_h > 0 && _h < 100) warnings.push('키 ' + _h + 'cm (너무 작습니다)');
+    // 몸무게 단독 체크
+    if (_w > 0 && _w > 200) warnings.push('몸무게 ' + _w + 'kg');
+    if (_w > 0 && _w < 20) warnings.push('몸무게 ' + _w + 'kg (너무 가볍습니다)');
+    // 나이+키 조합
+    if (_a > 0 && _h > 0) {
+      if (_a <= 10 && _h > 160) warnings.push('나이 ' + _a + '세에 키 ' + _h + 'cm');
+      if (_a <= 12 && _h > 180) warnings.push('나이 ' + _a + '세에 키 ' + _h + 'cm');
+    }
+    // 나이+몸무게 조합
+    if (_a > 0 && _w > 0) {
+      if (_a <= 12 && _w > 80) warnings.push('나이 ' + _a + '세에 몸무게 ' + _w + 'kg');
+    }
+    // BMI (키+몸무게 모두 입력된 경우)
+    if (_h > 0 && _w > 0) {
+      const bmi = _w / Math.pow(_h/100, 2);
+      if (bmi > 45) warnings.push('BMI ' + bmi.toFixed(1) + ' — 비만 수준입니다');
+      if (bmi < 10) warnings.push('BMI ' + bmi.toFixed(1) + ' — 너무 낮습니다');
+    }
     if (warnings.length > 0) {
       const ok = confirm(
         '⚠️ 와, 대단한 스펙인데요?\n\n' +
-        '입력하신 수치: ' + warnings.join(', ') + '\n\n' +
+        '입력하신 수치: ' + warnings.join(' / ') + '\n\n' +
         '혹시 잘못 입력하신 건 아닌가요?\n' +
         '수치가 잘못되면 보고서도 엉뚱하게 나옵니다.\n\n' +
         '맞으면 확인, 수정하려면 취소를 눌러주세요.'
@@ -3903,7 +3919,7 @@ async function generateDeepReport() {
   showScreen('deepLoading');
 
   const steps = ['dstep0','dstep1','dstep2','dstep3'];
-  const stepDelay = [3000, 15000, 15000, 15000];
+  const stepDelay = [5000, 18000, 18000, 18000];
 
   for (let i = 0; i < steps.length; i++) {
     document.getElementById(steps[i]).className = 'deep-step active';
@@ -4000,7 +4016,7 @@ async function generateDeepReport() {
         renderFallbackDeepReport(m, p, pg);
       }
 
-      // 보고서 저장
+      // 보고서 저장 — 화면 전환 전에 먼저 실행
       if (lastCode) {
         try {
           var saveData = Object.assign({}, mergedData, {
@@ -4013,8 +4029,12 @@ async function generateDeepReport() {
             name: p.name, score: lastScore, grade: gradeOf(lastScore),
             reportJson: JSON.stringify(saveData).slice(0, 4000)
           });
+          console.log('[KS] 보고서 저장 시작. 코드:', lastCode, '크기:', JSON.stringify(saveData).length);
           fetch(APPS_SCRIPT_URL + '?' + rParams.toString(), { mode: 'no-cors' });
-        } catch(se) { console.warn('saveReport 실패:', se); }
+          console.log('[KS] 보고서 저장 요청 전송 완료');
+        } catch(se) { console.warn('[KS] saveReport 실패:', se); }
+      } else {
+        console.warn('[KS] lastCode 없음 — 보고서 저장 스킵');
       }
 
   } catch(e) {
