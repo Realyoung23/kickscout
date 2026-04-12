@@ -207,8 +207,8 @@ function renderReport(result, data) {
     document.getElementById('secAgent').style.display = 'block';
   }
 
-  // 핵심 진단
-  if (data.strength || data.weakness) {
+  // 핵심 진단 — strength/weakness/action 중 하나라도 있으면 표시
+  if (data.strength || data.weakness || data.action) {
     document.getElementById('rStrength').textContent = data.strength || '-';
     document.getElementById('rStrengthDesc').textContent = data.strengthDesc || '';
     document.getElementById('rWeakness').textContent = data.weakness || '-';
@@ -220,8 +220,8 @@ function renderReport(result, data) {
 
   // 포지션
   if (data.recommendPos) {
-    document.getElementById('rCurrentPos').textContent = data.recommendPos;
-    document.getElementById('rRecommendPos').textContent = data.recommendPos;
+    document.getElementById('rCurrentPos').textContent = data._originalPos || '-';
+    document.getElementById('rRecommendPos').textContent = data.recommendPos || '-';
     var deepTxt = data.positionDeepAnalysis || data.currentReason || '';
     document.getElementById('rPositionDeep').innerHTML =
       '<p>' + deepTxt.split('\n').join('</p><p>') + '</p>';
