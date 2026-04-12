@@ -1261,10 +1261,10 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
     <div class="deep-loading-title">심층 분석 중</div>
     <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;">AI 스카우트가 FIFA 기준으로 분석합니다</p>
     <div class="deep-loading-steps">
-      <div class="deep-step active" id="dstep0"><div class="deep-step-dot"></div><div class="deep-step-text">결제 확인 중...</div></div>
-      <div class="deep-step" id="dstep1"><div class="deep-step-dot"></div><div class="deep-step-text">포지션별 FIFA 기준 로드</div></div>
-      <div class="deep-step" id="dstep2"><div class="deep-step-dot"></div><div class="deep-step-text">AI 스카우트 분석 생성 중</div></div>
-      <div class="deep-step" id="dstep3"><div class="deep-step-dot"></div><div class="deep-step-text">보고서 포맷 구성</div></div>
+      <div class="deep-step active" id="dstep0"><div class="deep-step-dot"></div><div class="deep-step-text">에이전트가 FIFA 사무국에 달려가는 중...</div></div>
+      <div class="deep-step" id="dstep1"><div class="deep-step-dot"></div><div class="deep-step-text">AI와 에이전트가 박터지게 의논하는 중...</div></div>
+      <div class="deep-step" id="dstep2"><div class="deep-step-dot"></div><div class="deep-step-text">생체역학 전문가가 관절 데이터 뜯어보는 중...</div></div>
+      <div class="deep-step" id="dstep3"><div class="deep-step-dot"></div><div class="deep-step-text">이적 시장 시세 확인하고 보고서 마무리 중...</div></div>
     </div>
   </div>
 </div>
@@ -3811,6 +3811,32 @@ async function startPayment() {
   const _n = (document.getElementById('nameInput').value||'').trim();
   const _p = document.getElementById('posSelect').value;
   const _a = parseInt(document.getElementById('ageInput').value)||0;
+
+  // ── 입력값 비정상 감지 ──
+  const _h = parseInt(document.getElementById('heightInput')?.value)||0;
+  const _w = parseInt(document.getElementById('weightInput')?.value)||0;
+  if (_h > 0 && _w > 0 && _a > 0) {
+    const bmi = _w / Math.pow(_h/100, 2);
+    const warnings = [];
+    if (_a < 15 && _h > 190) warnings.push('나이 ' + _a + '세에 키 ' + _h + 'cm');
+    if (_a < 15 && _w > 100) warnings.push('나이 ' + _a + '세에 몸무게 ' + _w + 'kg');
+    if (bmi > 40) warnings.push('BMI ' + bmi.toFixed(1) + ' (몸무게 ' + _w + 'kg / 키 ' + _h + 'cm)');
+    if (bmi < 13) warnings.push('BMI ' + bmi.toFixed(1) + ' — 너무 가볍습니다');
+    if (_h > 220) warnings.push('키 ' + _h + 'cm');
+    if (_w > 180) warnings.push('몸무게 ' + _w + 'kg');
+    if (_a > 60) warnings.push('나이 ' + _a + '세');
+    if (warnings.length > 0) {
+      const ok = confirm(
+        '⚠️ 와, 대단한 스펙인데요?\n\n' +
+        '입력하신 수치: ' + warnings.join(', ') + '\n\n' +
+        '혹시 잘못 입력하신 건 아닌가요?\n' +
+        '수치가 잘못되면 보고서도 엉뚱하게 나옵니다.\n\n' +
+        '맞으면 확인, 수정하려면 취소를 눌러주세요.'
+      );
+      if (!ok) return;
+    }
+  }
+
   if (_n==='김탁봉' && _p==='RW') {
     // 나이 = 목표 점수
     
@@ -3877,7 +3903,7 @@ async function generateDeepReport() {
   showScreen('deepLoading');
 
   const steps = ['dstep0','dstep1','dstep2','dstep3'];
-  const stepDelay = [800, 1200, 2000, 1000];
+  const stepDelay = [3000, 15000, 15000, 15000];
 
   for (let i = 0; i < steps.length; i++) {
     document.getElementById(steps[i]).className = 'deep-step active';
