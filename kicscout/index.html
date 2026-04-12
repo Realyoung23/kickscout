@@ -1434,7 +1434,6 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
       <div class="deep-section-title">포지션 추천 이유 & 플레이 스타일</div>
       <div id="drAgentAnalysis" class="deep-scout-text" style="line-height:1.9;"></div>
     </div>
-    <!-- AI 스카우트 종합 총평은 1장에서 표시되므로 4장에서 제거 -->
     <div id="drScout" style="display:none;"></div>
     <div class="page-nav-row">
       <button class="page-prev-btn" onclick="showPage(3)">← 3장</button>
@@ -1810,37 +1809,26 @@ async function processOneFrame(time) {
 async function startAnalysis() {
   if (!videoFile || !poseEngine) return;
 
-  // ── 입력값 비정상 감지 (AI 분석 시작 버튼) ──
-  const _valAge = parseInt(document.getElementById('ageInput').value) || 0;
-  const _valH   = parseInt(document.getElementById('heightInput')?.value) || 0;
-  const _valW   = parseInt(document.getElementById('weightInput')?.value) || 0;
-  const _valWarnings = [];
-
-  if (_valAge > 0 && _valAge < 5)  _valWarnings.push('나이 ' + _valAge + '세 (너무 어려요)');
-  if (_valAge > 65)                 _valWarnings.push('나이 ' + _valAge + '세');
-  if (_valH > 0 && _valH < 100)    _valWarnings.push('키 ' + _valH + 'cm (너무 작아요)');
-  if (_valH > 230)                  _valWarnings.push('키 ' + _valH + 'cm');
-  if (_valW > 0 && _valW < 20)     _valWarnings.push('몸무게 ' + _valW + 'kg (너무 가벼워요)');
-  if (_valW > 200)                  _valWarnings.push('몸무게 ' + _valW + 'kg');
-  if (_valAge > 0 && _valH > 0) {
-    if (_valAge <= 10 && _valH > 160) _valWarnings.push('나이 ' + _valAge + '세에 키 ' + _valH + 'cm');
-    if (_valAge <= 12 && _valH > 180) _valWarnings.push('나이 ' + _valAge + '세에 키 ' + _valH + 'cm');
+  // 입력값 비정상 감지
+  var _va = parseInt(document.getElementById('ageInput').value) || 0;
+  var _vh = parseInt(document.getElementById('heightInput')?.value) || 0;
+  var _vw = parseInt(document.getElementById('weightInput')?.value) || 0;
+  var _vw2 = [];
+  if (_va > 0 && _va < 5)  _vw2.push('나이 ' + _va + '세 (너무 어려요)');
+  if (_va > 65)             _vw2.push('나이 ' + _va + '세');
+  if (_vh > 0 && _vh < 100) _vw2.push('키 ' + _vh + 'cm');
+  if (_vh > 230)            _vw2.push('키 ' + _vh + 'cm');
+  if (_vw > 0 && _vw < 20) _vw2.push('몸무게 ' + _vw + 'kg');
+  if (_vw > 200)            _vw2.push('몸무게 ' + _vw + 'kg');
+  if (_va > 0 && _vh > 0 && _va <= 10 && _vh > 160) _vw2.push('나이 ' + _va + '세에 키 ' + _vh + 'cm');
+  if (_va > 0 && _vw > 0 && _va <= 12 && _vw > 80)  _vw2.push('나이 ' + _va + '세에 몸무게 ' + _vw + 'kg');
+  if (_vh > 0 && _vw > 0) {
+    var _bmi = _vw / Math.pow(_vh/100, 2);
+    if (_bmi < 10) _vw2.push('BMI ' + _bmi.toFixed(1));
+    if (_bmi > 45) _vw2.push('BMI ' + _bmi.toFixed(1));
   }
-  if (_valAge > 0 && _valW > 0 && _valAge <= 12 && _valW > 80)
-    _valWarnings.push('나이 ' + _valAge + '세에 몸무게 ' + _valW + 'kg');
-  if (_valH > 0 && _valW > 0) {
-    const _bmi = _valW / Math.pow(_valH / 100, 2);
-    if (_bmi < 10) _valWarnings.push('BMI ' + _bmi.toFixed(1) + ' (너무 낮아요)');
-    if (_bmi > 45) _valWarnings.push('BMI ' + _bmi.toFixed(1) + ' (너무 높아요)');
-  }
-  if (_valWarnings.length > 0) {
-    const _ok = confirm(
-      '⚠️ 와, 대단한 스펙인데요?\n\n' +
-      '입력하신 수치: ' + _valWarnings.join(' / ') + '\n\n' +
-      '혹시 잘못 입력하신 건 아닌가요?\n' +
-      '수치가 잘못되면 보고서도 엉뚱하게 나옵니다.\n\n' +
-      '맞으면 확인, 수정하려면 취소를 눌러주세요.'
-    );
+  if (_vw2.length > 0) {
+    var _ok = confirm('와, 대단한 스펙인데요?\n\n' + _vw2.join(' / ') + '\n\n혹시 잘못 입력하신 건 아닌가요?\n맞으면 확인, 수정하려면 취소를 눌러주세요.');
     if (!_ok) return;
   }
 
@@ -4014,18 +4002,14 @@ async function generateDeepReport() {
             _playerName: p.name,
             _age: p.age
           });
-          var reportStr = JSON.stringify(saveData);
-          // btoa로 base64 인코딩 — URL 내 # 등 특수문자 문제 방지
-          var reportB64;
-          try { reportB64 = btoa(unescape(encodeURIComponent(reportStr.slice(0, 3500)))); }
-          catch(e) { reportB64 = btoa(reportStr.replace(/[^ -]/g, '?').slice(0, 3500)); }
+          var _rj = JSON.stringify(saveData).slice(0, 3500);
+          var _rb = btoa(unescape(encodeURIComponent(_rj)));
           var rParams = new URLSearchParams({
             action: 'saveReport', code: lastCode,
             name: p.name, score: lastScore, grade: gradeOf(lastScore),
-            reportJson: reportB64,
-            encoded: 'base64'
+            reportJson: _rb, encoded: 'base64'
           });
-          console.log('[KS] 보고서 저장. 코드:', lastCode, '원본크기:', reportStr.length);
+          console.log('[KS] 보고서 저장. 코드:', lastCode);
           fetch(APPS_SCRIPT_URL + '?' + rParams.toString(), { mode: 'no-cors' });
         } catch(se) { console.warn('saveReport 실패:', se); }
       }
