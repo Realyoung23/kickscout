@@ -758,6 +758,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
     <span class="notice">분석 결과는 익명으로 수집됩니다</span>
     <span class="notice">인터넷 연결 필요</span>
     <a href="/refund" target="_blank" class="notice" style="color:var(--accent);text-decoration:none;cursor:pointer;">환불정책</a>
+    <span style="color:var(--muted);margin:0 6px;">·</span><a href="/policy" target="_blank" style="color:var(--muted);font-size:10px;text-decoration:none;cursor:pointer;letter-spacing:1px;">개인정보처리방침</a>
   </div>
 </div>
 
@@ -1651,6 +1652,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
 // CONFIG — 여기에 키를 넣으세요
 // ================================================================
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-2j_oxGVrfoElqlhUzo8lsEcSm7gJXzi4WXxpbyGwN5Vl9u80mEFN3Y0jcmWUhw-uiQ/exec';
+const APPS_SCRIPT_TOKEN = 'ks2026' + 'secure' + 'token';
 const CLAUDE_API_KEY  = '';  // Netlify Function에서 처리 — 여기엔 입력 불필요
 const TOSS_CLIENT_KEY = 'YOUR_TOSS_CLIENT_KEY_HERE'; // 토스페이먼츠 승인 후 입력
 
@@ -2169,9 +2171,6 @@ function getPosGroup(pos) {
 // RENDER REPORT
 // ================================================================
 function showReport(m, p, duration) {
-  if (p.name === '김탁봉' && p.pos === 'RW') {
-    lastScore = (p.age === 36) ? 74.83 : p.age;
-  }
   // ③ 업셀 타이머 시작
   setTimeout(startUpsellTimer, 1000);
   // A3: 다인 감지 경고 (감지율 35% 미만)
@@ -2205,7 +2204,7 @@ function showReport(m, p, duration) {
   document.getElementById('rScore').textContent = typeof score === 'number' ? score.toFixed(2) : score;
   document.getElementById('rGrade').textContent = grade;
   document.getElementById('rMeta').innerHTML =
-    `<span class="meta-tag">${p.pos}</span>
+    `<span class="meta-tag">${escapeHTML(p.pos)}</span>
      <span class="meta-tag">나이 ${p.age}</span>
      <span class="meta-tag real">✓ 실측 데이터</span>`;
 
@@ -2272,7 +2271,7 @@ function showReport(m, p, duration) {
   const trunkJudge = m.trunkAvg<15?'매우 안정적':m.trunkAvg<25?'정상 범위':'개선이 필요';
 
   document.getElementById('rRecText').innerHTML =
-    `<strong>${p.name}</strong>의 최고 속도 <strong>${m.maxSpeed} km/h</strong>는 ${leagueRef}에 해당합니다.
+    `<strong>${escapeHTML(p.name)}</strong>의 최고 속도 <strong>${m.maxSpeed} km/h</strong>는 ${leagueRef}에 해당합니다.
     ${pg} 포지션 K3리그 평균(${spBench} km/h)과 비교하면 ${spPct}% 수준이며,
     ${Number(spDiff)>0?`${spDiff} km/h 향상 시 K3리그 기준에 근접합니다.`:`이미 K3리그 평균을 상회합니다.`}
     좌우 균형 점수 <strong>${m.balanceScore}점</strong>은 ${balJudge}이며,
@@ -3854,7 +3853,8 @@ async function sendToSheets(metrics, player, score, grade, paid = false, email =
       email: email || '',
       newsletter: newsletter ? 'Y' : 'N',
       code: code || '',
-      reportDone: reportDone
+      reportDone: reportDone,
+      _t: APPS_SCRIPT_TOKEN
     });
     // no-cors GET 요청 (응답 무시, 저장만 목적)
     fetch(APPS_SCRIPT_URL + '?' + params.toString(), { mode: 'no-cors' });
@@ -3872,28 +3872,7 @@ async function startPayment() {
   const _n = (document.getElementById('nameInput').value||'').trim();
   const _p = document.getElementById('posSelect').value;
   const _a = parseInt(document.getElementById('ageInput').value)||0;
-  if (_n==='김탁봉' && _p==='RW') {
-    // 나이 = 목표 점수
-    
-    var testScore = (_a === 36) ? 74.83 : _a;
-    // 기본 metrics
-    var tm = {
-      maxSpeed: testScore >= 80 ? 28.5 : testScore >= 70 ? 24.5 : 20.0,
-      avgSpeed: 14.2, totalDist: 180,
-      sprints: testScore >= 80 ? 10 : testScore >= 70 ? 8 : 5,
-      avgKneeL: 128, avgKneeR: 132, trunkAvg: 12,
-      balanceScore: testScore >= 80 ? 85 : testScore >= 70 ? 76 : 65,
-      detRate: 85, framesAnalyzed: 120, minKnee: 110
-    };
-    var tp = { name:_n, pos:_p, age:25, height:178, weight:72 };
-    // calcScore 대신 점수 직접 주입: showReport 호출 후 강제 덮어쓰기
-    lastMetrics = tm;
-    lastScore = testScore;
-    playerInfo = tp;
-    // 무료 보고서 화면으로 이동 (카드 플립 포함)
-    showReport(tm, tp, 30);
-    return;
-  }
+
 
   // 토스페이먼츠 키가 설정되지 않은 경우 데모 모드
   if (TOSS_CLIENT_KEY === 'YOUR_TOSS_CLIENT_KEY_HERE') {
@@ -4040,6 +4019,7 @@ async function generateDeepReport() {
         try {
           var doneParams = new URLSearchParams({
             action: 'updateReportDone', code: lastCode || '',
+            _t: APPS_SCRIPT_TOKEN,
             reportDone: 'Y'
           });
           fetch(APPS_SCRIPT_URL + '?' + doneParams.toString(), { mode: 'no-cors' });
@@ -4087,6 +4067,7 @@ async function generateDeepReport() {
           var _rb = btoa(unescape(encodeURIComponent(_rj)));
           var rBody = new URLSearchParams({
             action: 'saveReport', code: lastCode,
+            _t: APPS_SCRIPT_TOKEN,
             name: p.name, score: lastScore, grade: gradeOf(lastScore),
             reportJson: _rb, encoded: 'base64'
           });
@@ -4114,6 +4095,12 @@ async function generateDeepReport() {
 }
 
 
+
+// XSS 방지
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
 
 // 잘린 JSON에서도 완성된 필드를 추출
 function extractPartialJSON(text, label) {
@@ -4236,7 +4223,7 @@ function buildDataContext(m, p, pg, score) {
   return '당신은 FIFA 공인 에이전트(등록번호 202405-6014)다. 20년 경력. 냉정하게 판단한다.\n'
     + '선수가 9,900원을 내고 전문가의 평가를 원한다. 실제로 도움이 되는 내용만 써라.\n\n'
     + '=== 실측 데이터 ===\n'
-    + '선수: ' + p.name + ' | 나이: ' + p.age + '세(' + ageGroup + ') | 포지션: ' + p.pos + '(' + pg + ') | 종합점수: ' + parseFloat(score).toFixed(2) + '점\n'
+    + '선수: ' + escapeHTML(p.name) + ' | 나이: ' + p.age + '세(' + ageGroup + ') | 포지션: ' + escapeHTML(p.pos) + '(' + pg + ') | 종합점수: ' + parseFloat(score).toFixed(2) + '점\n'
     + '최고속도: ' + m.maxSpeed + 'km/h (' + spStatus + ', 동나이 아마추어 평균 ' + ({FW:24,MF:22,DF:20,GK:16}[pg]||22) + 'km/h)\n'
     + '균형: ' + m.balanceScore + '점 | 상체기울기: ' + m.trunkAvg + '°(최대 ' + (m.trunkMax||0) + '°) | 상체회전: ' + (m.shoulderRange||0) + '°\n'
     + '스프린트: ' + m.sprints + '회 | 이동거리: ' + m.totalDist + 'm | 페이스일관성: ' + (m.paceConsistency||0) + '점\n'
@@ -4287,7 +4274,7 @@ function buildDeepPrompt(m, p, pg, score) {
     + '지금 보고 있는 선수는 9,900원을 내고 냉정한 프로의 평가를 원하는 사람이다.\n'
     + '이 보고서는 선수가 스스로를 개선하는 데 실제로 도움이 되어야 한다.\n\n'
     + '=== 실측 데이터 ===\n'
-    + '선수: ' + p.name + ' | 나이: ' + p.age + '세(' + ageGroup + ') | 포지션: ' + p.pos + '(' + pg + ') | 종합점수: ' + parseFloat(score).toFixed(2) + '점\n'
+    + '선수: ' + escapeHTML(p.name) + ' | 나이: ' + p.age + '세(' + ageGroup + ') | 포지션: ' + escapeHTML(p.pos) + '(' + pg + ') | 종합점수: ' + parseFloat(score).toFixed(2) + '점\n'
     + '최고속도: ' + m.maxSpeed + 'km/h (' + spStatus + ', 동나이대 아마추어 평균 ' + ({FW:24,MF:22,DF:20,GK:16}[pg]||22) + 'km/h와도 비교)\n'
     + '균형점수: ' + m.balanceScore + '점(100점 만점) | 상체기울기: ' + m.trunkAvg + '°(이상적 범위 5°~12°)\n'
     + '스프린트: ' + m.sprints + '회 | 이동거리: ' + m.totalDist + 'm\n'
@@ -4380,7 +4367,7 @@ function renderFallbackDeepReport(m, p, pg) {
   const altPos = posMap[pg]?.find(x => x !== p.pos) || p.pos;
   const data = {
     recommendPos: m.maxSpeed > 20 && ['MF','DF','GK'].includes(pg) ? (pg==='MF'?'LW':altPos) : altPos,
-    currentReason: `${p.pos} 포지션은 ${pg==='FW'?'속도와 결정력':'체력과 포지셔닝'}이 핵심입니다. 측정된 최고속도 ${m.maxSpeed} km/h와 균형 점수 ${m.balanceScore}점을 기반으로 분석하였습니다.`,
+    currentReason: `${escapeHTML(p.pos)} 포지션은 ${pg==='FW'?'속도와 결정력':'체력과 포지셔닝'}이 핵심입니다. 측정된 최고속도 ${m.maxSpeed} km/h와 균형 점수 ${m.balanceScore}점을 기반으로 분석하였습니다.`,
     recommendReason: `실측 데이터 기반으로 ${m.maxSpeed > 18 ? '속도 우위' : '균형과 포지셔닝 능력'}가 확인되어 해당 포지션에서 더 높은 효율을 낼 수 있을 것으로 평가됩니다.`,
     training: [
       { title: '햄스트링 편심성 강화', desc: '노르딕 컬 운동을 주 3회, 3세트×8회 실시하세요. 무릎 굴곡각 데이터(좌 '+m.avgKneeL+'° / 우 '+m.avgKneeR+'°)를 고려할 때 후면 근력 보강이 우선입니다.' },
@@ -4388,9 +4375,9 @@ function renderFallbackDeepReport(m, p, pg) {
       { title: '좌우 균형 교정', desc: '좌우 무릎 각도 차이 '+Math.abs(m.avgKneeL - m.avgKneeR)+'°가 관찰됩니다. 단다리 스쿼트(pistol squat)와 밴드 워킹을 통해 좌우 불균형을 교정하는 것을 권장합니다.' }
     ],
     injury: `왼쪽과 오른쪽 무릎 굴곡각 차이(${Math.abs(m.avgKneeL - m.avgKneeR)}°)가 지속될 경우 장기적으로 슬개대퇴 증후군 위험이 증가할 수 있습니다. 훈련 전 동적 스트레칭(레그스윙, 힙서클)을 반드시 10분 이상 실시하고, 훈련 후 폼롤러를 이용한 IT밴드 이완을 권장합니다. 현재 균형점수 ${m.balanceScore}점은 지속적인 모니터링이 필요한 수준입니다.`,
-    agentAnalysis: `${p.name} 선수(${p.age}세, ${p.pos})에 대한 분석이다. 최고속도 ${m.maxSpeed} km/h는 동포지션 K3리그 평균과 비교할 때 ${m.maxSpeed >= ({FW:28,MF:25,DF:23,GK:18}[pg]||25) ? '상회하는 수준으로 속도 면에서 경쟁력이 있다' : '낮은 수준으로 속도 향상이 필요하다'}. 균형점수 ${m.balanceScore}점은 ${m.balanceScore >= 80 ? '안정적인 수준으로 방향 전환 시 강점이 될 수 있다' : '개선이 필요하며 방향 전환 시 불안정 패턴이 나타날 수 있다'}. 6주 훈련 플랜을 성실히 수행하면 다음 분석에서 유의미한 변화를 확인할 수 있을 것이다.`,
-    positionDeepAnalysis: `${p.pos} 포지션에서 이 선수의 핵심 과제는 ${m.maxSpeed >= ({FW:28,MF:25,DF:23,GK:18}[pg]||25) ? '속도 유지와 체력 강화' : '속도 향상과 폭발력 개선'}이다. 균형점수 ${m.balanceScore}점을 고려할 때 ${m.balanceScore >= 80 ? '좌우 균형은 강점이므로 드리블과 방향 전환 플레이를 적극 활용해야 한다' : '좌우 균형 개선이 선행되어야 드리블 안정성이 확보된다'}. 6주 훈련 후 재분석을 통해 포지션 적합도 변화를 확인할 것을 권장한다.`,
-    scout: `${p.name} 선수(${p.age}세, ${p.pos})는 실측 기반 분석에서 최고속도 ${m.maxSpeed} km/h를 기록하며 동연령대 평균 수준의 스피드를 보유하고 있습니다. 좌우 균형 점수 ${m.balanceScore}점은 안정적인 기초 체력을 시사하며, 코어 안정성 향상 시 한 단계 높은 수준으로 도약 가능한 잠재력을 보유하고 있습니다. 상체 기울기(${m.trunkAvg}°)의 체계적 개선을 통해 스프린트 효율 향상이 기대됩니다. 향후 6개월간 집중 훈련 시 KickScout 기준 등급 상향이 충분히 가능한 선수입니다.`
+    agentAnalysis: `${escapeHTML(p.name)} 선수(${p.age}세, ${escapeHTML(p.pos)})에 대한 분석이다. 최고속도 ${m.maxSpeed} km/h는 동포지션 K3리그 평균과 비교할 때 ${m.maxSpeed >= ({FW:28,MF:25,DF:23,GK:18}[pg]||25) ? '상회하는 수준으로 속도 면에서 경쟁력이 있다' : '낮은 수준으로 속도 향상이 필요하다'}. 균형점수 ${m.balanceScore}점은 ${m.balanceScore >= 80 ? '안정적인 수준으로 방향 전환 시 강점이 될 수 있다' : '개선이 필요하며 방향 전환 시 불안정 패턴이 나타날 수 있다'}. 6주 훈련 플랜을 성실히 수행하면 다음 분석에서 유의미한 변화를 확인할 수 있을 것이다.`,
+    positionDeepAnalysis: `${escapeHTML(p.pos)} 포지션에서 이 선수의 핵심 과제는 ${m.maxSpeed >= ({FW:28,MF:25,DF:23,GK:18}[pg]||25) ? '속도 유지와 체력 강화' : '속도 향상과 폭발력 개선'}이다. 균형점수 ${m.balanceScore}점을 고려할 때 ${m.balanceScore >= 80 ? '좌우 균형은 강점이므로 드리블과 방향 전환 플레이를 적극 활용해야 한다' : '좌우 균형 개선이 선행되어야 드리블 안정성이 확보된다'}. 6주 훈련 후 재분석을 통해 포지션 적합도 변화를 확인할 것을 권장한다.`,
+    scout: `${escapeHTML(p.name)} 선수(${p.age}세, ${escapeHTML(p.pos)})는 실측 기반 분석에서 최고속도 ${m.maxSpeed} km/h를 기록하며 동연령대 평균 수준의 스피드를 보유하고 있습니다. 좌우 균형 점수 ${m.balanceScore}점은 안정적인 기초 체력을 시사하며, 코어 안정성 향상 시 한 단계 높은 수준으로 도약 가능한 잠재력을 보유하고 있습니다. 상체 기울기(${m.trunkAvg}°)의 체계적 개선을 통해 스프린트 효율 향상이 기대됩니다. 향후 6개월간 집중 훈련 시 KickScout 기준 등급 상향이 충분히 가능한 선수입니다.`
   };
   renderDeepReport(data, m, p, pg);
 }
@@ -4403,7 +4390,7 @@ function renderDeepReport(data, m, p, pg) {
   document.getElementById('drScore').textContent = typeof score === 'number' ? score.toFixed(2) : score;
   document.getElementById('drGrade').textContent = gradeOf(score) + ' · PREMIUM';
   document.getElementById('drMeta').innerHTML =
-    `<span class="meta-tag">${p.pos}</span><span class="meta-tag">나이 ${p.age}</span>`;
+    `<span class="meta-tag">${escapeHTML(p.pos)}</span><span class="meta-tag">나이 ${p.age}</span>`;
 
   // 1장 포지션 분석 (p1_ prefix)
   var cpEl = document.getElementById('p1_drCurrentPos');
