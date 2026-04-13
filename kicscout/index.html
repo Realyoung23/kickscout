@@ -3587,6 +3587,7 @@ function submitAgentContact() {
     action: 'agentContact',
     email: email,
     message: msg,
+    _t: APPS_SCRIPT_TOKEN,
     name: (playerInfo && playerInfo.name) ? playerInfo.name : '익명',
     pos: (playerInfo && playerInfo.pos) ? playerInfo.pos : '-',
     score: lastScore || 0,
@@ -3762,6 +3763,7 @@ async function submitAgentContact() {
       email: email, message: msg,
       name: (playerInfo && playerInfo.name) || '익명',
       pos: (playerInfo && playerInfo.pos) || '-',
+      _t: APPS_SCRIPT_TOKEN,
       score: lastScore || 0,
       grade: gradeOf(lastScore || 0),
       code: lastCode || '-'
