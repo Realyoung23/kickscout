@@ -2634,20 +2634,8 @@ async function submitEmail() {
     await sendToSheets(lastMetrics, playerInfo, lastScore, gradeOf(lastScore), true, email, newsletter, lastCode);
   }
 
-  // 이메일로 보고서 코드 발송 (이메일 입력한 경우만)
-  if (email) {
-    try {
-      var mailParams = new URLSearchParams({
-        action: 'sendCodeEmail',
-        email: email,
-        code: lastCode,
-        name: (playerInfo && playerInfo.name) ? playerInfo.name : '선수',
-        score: lastScore || 0,
-        grade: gradeOf(lastScore || 0)
-      });
-      fetch(APPS_SCRIPT_URL + '?' + mailParams.toString(), { mode: 'no-cors' });
-    } catch(e) { console.warn('이메일 발송 요청 실패:', e); }
-  }
+  // 이메일 발송 기능 — 추후 활성화 예정
+  // if (email) { ... sendCodeEmail ... }
 
   hideEmailModal();
   showCodeInReport();
@@ -4046,17 +4034,35 @@ async function generateDeepReport() {
             _originalPos: p.pos,
             _playerName: p.name,
             _age: p.age,
-            // 시각화 데이터 텍스트 요약 (lookup에서 표시용)
+            _pos: p.pos,
+            _score: lastScore,
+            _grade: gradeOf(lastScore),
+            // 원본 metrics 저장 (lookup에서 차트 재생성용)
+            _metrics: {
+              maxSpeed: m.maxSpeed, avgSpeed: m.avgSpeed,
+              totalDist: m.totalDist, sprints: m.sprints,
+              avgKneeL: m.avgKneeL, avgKneeR: m.avgKneeR,
+              kneeRangeL: m.kneeRangeL||0, kneeRangeR: m.kneeRangeR||0,
+              avgHipL: m.avgHipL||0, avgHipR: m.avgHipR||0, hipAsym: m.hipAsym||0,
+              avgElbowL: m.avgElbowL||0, avgElbowR: m.avgElbowR||0, elbowAsym: m.elbowAsym||0,
+              trunkAvg: m.trunkAvg, trunkMax: m.trunkMax||0,
+              shoulderRange: m.shoulderRange||0,
+              balanceScore: m.balanceScore, detRate: m.detRate,
+              paceConsistency: m.paceConsistency||0, sprintRatio: m.sprintRatio||0,
+              accelCount: m.accelCount||0, decelCount: m.decelCount||0
+            },
             _dataText: [
               '최고속도 ' + m.maxSpeed + 'km/h (K3리그 ' + (getPosGroup(p.pos)||'MF') + ' 평균 ' + ({FW:28,MF:25,DF:23,GK:18}[getPosGroup(p.pos)]||25) + 'km/h)',
-              '좌우 균형 ' + m.balanceScore + '점 (100점 만점)',
+              '좌우 균형 ' + m.balanceScore + '점 | 페이스일관성 ' + (m.paceConsistency||0) + '점',
               '무릎각도 좌 ' + m.avgKneeL + '° / 우 ' + m.avgKneeR + '° (차이 ' + Math.abs(m.avgKneeL-m.avgKneeR) + '°)',
+              '무릎가동범위 좌 ' + (m.kneeRangeL||0) + '° / 우 ' + (m.kneeRangeR||0) + '°',
+              '고관절 좌우 비대칭 ' + (m.hipAsym||0) + '° | 팔스윙 비대칭 ' + (m.elbowAsym||0) + '°',
               '상체기울기 평균 ' + m.trunkAvg + '° / 최대 ' + (m.trunkMax||0) + '°',
-              '스프린트 ' + m.sprints + '회 | 이동거리 ' + m.totalDist + 'm',
-              '페이스일관성 ' + (m.paceConsistency||0) + '점 | 감지율 ' + m.detRate + '%'
+              '스프린트 ' + m.sprints + '회 | 이동거리 ' + m.totalDist + 'm | 감지율 ' + m.detRate + '%',
+              '가속 ' + (m.accelCount||0) + '회 / 감속 ' + (m.decelCount||0) + '회 | 스프린트비율 ' + (m.sprintRatio||0) + '%'
             ].join('\n')
           });
-          var _rj = JSON.stringify(saveData).slice(0, 3500);
+          var _rj = JSON.stringify(saveData).slice(0, 8000);
           var _rb = btoa(unescape(encodeURIComponent(_rj)));
           var rParams = new URLSearchParams({
             action: 'saveReport', code: lastCode,
@@ -4652,14 +4658,26 @@ function printReport() {
 }
 
 function printDeepReport() {
-  // 인쇄 전 5장 모두 보이게 하고 인쇄
+  // 모든 페이지 표시
   for (let i = 1; i <= 5; i++) {
     const p = document.getElementById('deepPage' + i);
-    if (p) p.style.display = 'block';
+    if (p) { p.style.display = 'block'; p.setAttribute('data-print', '1'); }
   }
+  // 탭 네비게이션, 버튼 등 숨기기
+  const hideEls = document.querySelectorAll(
+    '.deep-nav, .page-nav-row, .page-next-btn, .page-prev-btn, ' +
+    '#loadingWarning, .upsell-banner, .deep-loading-steps, ' +
+    '.email-modal-wrap, #codeBoxSection button, #agentContactSection'
+  );
+  hideEls.forEach(el => { el.dataset.printHide = '1'; el.style.display = 'none'; });
+
   window.print();
-  // 인쇄 후 현재 페이지만 다시 보이게 (1장으로)
-  setTimeout(() => showPage(1), 500);
+
+  // 인쇄 후 복원
+  setTimeout(() => {
+    hideEls.forEach(el => { delete el.dataset.printHide; el.style.display = ''; });
+    showPage(1);
+  }, 500);
 }
 
 // ================================================================

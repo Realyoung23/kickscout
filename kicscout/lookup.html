@@ -57,6 +57,14 @@
   .diag-label{font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:6px;}
   .diag-title{font-size:15px;font-weight:700;color:var(--accent2);margin-bottom:4px;}
   .diag-desc{font-size:12px;color:var(--muted);line-height:1.7;}
+
+@media print {
+  body { background: white !important; color: black !important; }
+  .btn, #pdfBtnWrap, #inputCard { display: none !important; }
+  .section { border: 1px solid #ccc !important; background: white !important; }
+  .section-title { color: #333 !important; }
+  .diag-title { color: #000 !important; }
+}
 </style>
 </head>
 <body>
@@ -115,6 +123,12 @@
       </div>
     </div>
 
+    <!-- 데이터 요약 (시각화 대체 텍스트) -->
+    <div class="section" id="secData" style="display:none;">
+      <div class="section-title">📊 측정 데이터 요약</div>
+      <div id="rDataText" style="font-size:12px;color:var(--muted);line-height:2;font-family:'IBM Plex Mono',monospace;white-space:pre-line;"></div>
+    </div>
+
     <!-- 포지션 분석 -->
     <div class="section" id="secPos" style="display:none;">
       <div class="section-title">⚽ 포지션 분석</div>
@@ -146,7 +160,12 @@
       <div id="rWeekPlan"></div>
     </div>
 
-    <div style="text-align:center;margin-top:24px;">
+    <div id="pdfBtnWrap" style="display:none;text-align:center;margin-top:16px;margin-bottom:8px;">
+      <button onclick="window.print()" style="padding:12px 28px;background:var(--accent);color:#040608;
+        border:none;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:12px;
+        font-weight:700;letter-spacing:2px;cursor:pointer;">📄 PDF로 저장하기</button>
+    </div>
+    <div style="text-align:center;margin-top:16px;">
       <a href="/" style="color:var(--accent);font-size:12px;letter-spacing:1px;">새 분석 시작하기 →</a>
     </div>
   </div>
@@ -257,6 +276,40 @@ function renderReport(result, data) {
     document.getElementById('rWeekPlan').innerHTML = wHtml;
     document.getElementById('secWeek').style.display = 'block';
   }
+
+  // 데이터 요약 — metrics + 텍스트
+  var m = data._metrics;
+  if (m || data._dataText) {
+    var dataLines = [];
+    if (m) {
+      var pg = data.recommendPos ? (
+        ['ST','LW','RW','CF'].includes(data.recommendPos) ? 'FW' :
+        ['CM','CAM','CDM','LM','RM'].includes(data.recommendPos) ? 'MF' :
+        ['CB','LB','RB'].includes(data.recommendPos) ? 'DF' : 'MF'
+      ) : 'MF';
+      var bench = {FW:28,MF:25,DF:23,GK:18}[pg]||25;
+      var spDiff = (m.maxSpeed - bench).toFixed(1);
+      var spStatus = m.maxSpeed >= bench ? '▲ K3리그 평균 상회' : '▼ K3리그 평균 ' + Math.abs(spDiff) + 'km/h 부족';
+      dataLines = [
+        '🏃 최고속도: ' + m.maxSpeed + 'km/h  ' + spStatus,
+        '⚖️ 좌우 균형: ' + m.balanceScore + '점 / 페이스일관성: ' + (m.paceConsistency||0) + '점',
+        '🦵 무릎각도: 좌 ' + m.avgKneeL + '° / 우 ' + m.avgKneeR + '° (차이 ' + Math.abs(m.avgKneeL-m.avgKneeR) + '°)',
+        '📐 무릎가동범위: 좌 ' + (m.kneeRangeL||0) + '° / 우 ' + (m.kneeRangeR||0) + '°',
+        '🔄 고관절 비대칭: ' + (m.hipAsym||0) + '° / 팔스윙 비대칭: ' + (m.elbowAsym||0) + '°',
+        '📏 상체기울기: 평균 ' + m.trunkAvg + '° / 최대 ' + (m.trunkMax||0) + '°',
+        '⚡ 스프린트: ' + m.sprints + '회 / 이동거리: ' + m.totalDist + 'm / 감지율: ' + m.detRate + '%',
+        '🔥 가속: ' + (m.accelCount||0) + '회 / 감속: ' + (m.decelCount||0) + '회 / 스프린트비율: ' + (m.sprintRatio||0) + '%'
+      ];
+    } else if (data._dataText) {
+      dataLines = data._dataText.split('\n');
+    }
+    document.getElementById('rDataText').textContent = dataLines.join('\n');
+    document.getElementById('secData').style.display = 'block';
+  }
+
+  // PDF 저장 버튼
+  var pdfBtnWrap = document.getElementById('pdfBtnWrap');
+  if (pdfBtnWrap) pdfBtnWrap.style.display = 'block';
 
   // 스크롤
   document.getElementById('reportWrap').scrollIntoView({ behavior: 'smooth' });
