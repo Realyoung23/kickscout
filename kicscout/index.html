@@ -635,8 +635,9 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
   canvas { display: none !important; }
   svg { display: none !important; }
 
-  /* 화면 전체 표시 */
-  .screen { display: block !important; }
+  /* deepReport만 표시 — .screen 전체 show 제거 (다른 화면이 PDF에 출력되는 원인) */
+  .screen { display: none !important; }
+  #deepReport { display: block !important; }
 }
 </style>
 </head>
@@ -4107,7 +4108,7 @@ async function generateDeepReport() {
 
   // 이메일 모달 표시 (결제 완료 후)
   showScreen('deepReport');
-  setTimeout(() => { showEmailModal(); }, 800);
+  // setTimeout(() => { showEmailModal(); }, 800); // 이메일 팝업 비활성화
   // PDF 안내는 3장 탭 클릭 시 트리거됨
 }
 
@@ -4420,6 +4421,8 @@ function renderDeepReport(data, m, p, pg) {
     if (p1txt) {
       // ①②③ 앞에 줄바꿈 추가
       var p1formatted = p1txt
+        .replace(/^\s*\[/, '')   // 맨 앞 [ 제거
+        .replace(/\]/, '')        // ] 제거
         .replace(/①/g, '\n①')
         .replace(/②/g, '\n②')
         .replace(/③/g, '\n③')
