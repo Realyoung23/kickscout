@@ -598,7 +598,9 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
     box-shadow:none!important;text-shadow:none!important;
     border-color:#ccc!important;}
   .deep-nav,.page-nav-row,.btn-s,.btn-p,.page-next-btn,.page-prev-btn,
-  .header,.grid-bg,#ksFooter{display:none!important;}
+  .header,.grid-bg,#ksFooter,.deep-loading-steps,#loadingWarning,
+  .upsell-banner,.upsell-modal,.email-modal-wrap,
+  #dstep0,#dstep1,#dstep2,#dstep3{display:none!important;}
   .deep-page{display:block!important;page-break-after:always;
     background:#fff!important;padding:20px!important;}
   #deepPage5{page-break-after:auto;}
@@ -1260,17 +1262,16 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
     <div class="deep-loading-ring"></div>
     <div class="deep-loading-title">심층 분석 중</div>
     <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;">AI 스카우트가 FIFA 기준으로 분석합니다</p>
-    <p style="font-size:11px;color:rgba(255,255,255,.25);margin-bottom:16px;letter-spacing:1px;">보고서 작성에는 1~3분 정도 소요됩니다</p>
+    <div id="loadingWarning" style="margin-bottom:16px;padding:10px 14px;
+      background:rgba(255,100,100,.08);border:1px solid rgba(255,100,100,.2);
+      border-radius:4px;font-size:11px;letter-spacing:0.5px;text-align:center;
+      color:rgba(255,180,180,.8);line-height:1.7;transition:opacity 0.4s;"></div>
     <div class="deep-loading-steps">
       <div class="deep-step active" id="dstep0"><div class="deep-step-dot"></div><div class="deep-step-text" id="dstep0text">에이전트가 FIFA 사무국에 달려가는 중...</div></div>
       <div class="deep-step" id="dstep1"><div class="deep-step-dot"></div><div class="deep-step-text" id="dstep1text">AI와 에이전트가 박터지게 의논하는 중...</div></div>
       <div class="deep-step" id="dstep2"><div class="deep-step-dot"></div><div class="deep-step-text" id="dstep2text">생체역학 전문가가 관절 데이터 뜯어보는 중...</div></div>
       <div class="deep-step" id="dstep3"><div class="deep-step-dot"></div><div class="deep-step-text" id="dstep3text">이적 시장 시세 확인하고 보고서 마무리 중...</div></div>
-      <!-- 경고 메시지 (번갈아 표시) -->
-      <div id="loadingWarning" style="margin-top:20px;padding:12px 16px;
-        background:rgba(255,100,100,.08);border:1px solid rgba(255,100,100,.2);
-        border-radius:4px;font-size:11px;letter-spacing:0.5px;text-align:center;
-        color:rgba(255,180,180,.8);line-height:1.7;"></div>
+
     </div>
   </div>
 </div>
@@ -2383,6 +2384,15 @@ function showPage(n) {
     if (btn) btn.classList.toggle('active', i===n);
   }
   window.scrollTo(0,0);
+  // 3장 첫 진입 시 PDF 저장 안내
+  if (n === 3 && !window._pdfPromptShown) {
+    window._pdfPromptShown = true;
+    setTimeout(function() {
+      if (confirm('📄 보고서 저장 안내\n\n지금 PDF로 저장해두세요.\n보고서를 분실하면 다시 받기 어렵습니다.\n\nPDF로 저장하시겠습니까?')) {
+        printDeepReport();
+      }
+    }, 500);
+  }
 }
 
 
@@ -3944,20 +3954,20 @@ async function generateDeepReport() {
       const dataContext = buildDataContext(m, p, pg, lastScore);
       const mergedData = {};
 
-      // ── 1호출: 핵심 진단 + 에이전트 판단 ──────────────────
+      // ── 1호출: 에이전트 판단 + 핵심 진단 ──────────────────
       const prompt1 = dataContext + '\n\n' +
         '아래 필드만 JSON으로 출력해라. 백틱 없이.\n' +
         '{\n' +
         '  "recommendPos": "추천 포지션 코드",\n' +
         '  "currentReason": "현재 포지션 핵심 문제. 2문장.",\n' +
         '  "recommendReason": "추천 포지션 이유. 2문장.",\n' +
+        '  "agentAnalysis": "[3줄요약: ①강점 ②문제 ③추천여부]. 수치 기반 상세 서술. 300자 내외.",\n' +
         '  "strength": "강점 한 단어",\n' +
-        '  "strengthDesc": "이 강점이 경기 어떤 장면에서 발휘되는지. 3문장.",\n' +
+        '  "strengthDesc": "이 강점이 경기 어떤 장면에서 발휘되는지. 2문장.",\n' +
         '  "weakness": "약점 한 단어",\n' +
-        '  "weaknessDesc": "이 약점이 실전 어떤 순간에 문제가 되는지→방치 시 결과. 3문장.",\n' +
+        '  "weaknessDesc": "이 약점이 실전 어떤 순간에 문제가 되는지. 2문장.",\n' +
         '  "action": "지금 당장 가장 먼저 해야 할 것",\n' +
-        '  "actionDesc": "왜 이것이 가장 먼저인지. 3문장.",\n' +
-        '  "agentAnalysis": "에이전트 종합 판단. [3줄요약: ①강점 ②문제 ③추천여부]. 수치 기반 상세 서술. 400자 내외."\n' +
+        '  "actionDesc": "왜 이것이 가장 먼저인지. 2문장."\n' +
         '}';
 
       // ── 2호출: 신체역학 분석 (관절/부상 위험) ────────────────
@@ -4067,12 +4077,7 @@ async function generateDeepReport() {
   // 이메일 모달 표시 (결제 완료 후)
   showScreen('deepReport');
   setTimeout(() => { showEmailModal(); }, 800);
-  // 보고서 완료 2.5분 후 PDF 저장 안내
-  setTimeout(() => {
-    if (confirm('📄 보고서 저장 안내\n\n보고서를 PDF로 저장해두시면 언제든지 다시 볼 수 있습니다.\n\n지금 PDF로 저장하시겠습니까?')) {
-      printDeepReport();
-    }
-  }, 150000);
+  // PDF 안내는 3장 탭 클릭 시 트리거됨
 }
 
 
