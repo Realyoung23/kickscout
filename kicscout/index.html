@@ -593,30 +593,50 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
 
 /* ===== PDF 인쇄 ===== */
 @media print {
-  body{background:#fff!important;color:#1a1a1a!important;}
-  *{background:transparent!important;color:#1a1a1a!important;
-    box-shadow:none!important;text-shadow:none!important;
-    border-color:#ccc!important;}
-  .deep-nav,.page-nav-row,.btn-s,.btn-p,.page-next-btn,.page-prev-btn,
-  .header,.grid-bg,#ksFooter,.deep-loading-steps,#loadingWarning,
-  .upsell-banner,.upsell-modal,.email-modal-wrap,
-  #dstep0,#dstep1,#dstep2,#dstep3{display:none!important;}
-  .deep-page{display:block!important;page-break-after:always;
-    background:#fff!important;padding:20px!important;}
-  #deepPage5{page-break-after:auto;}
-  .deep-section{break-inside:avoid;border:1px solid #ddd!important;
-    background:#f9f9f9!important;border-radius:4px;padding:12px!important;}
-  .deep-section-title{color:#1a1a1a!important;font-weight:bold;}
-  .screen{display:block!important;}
-  #upload,#analysisScreen,#deepLoading,#result,#revisit,
-  #emailModal,#inputFormScreen{display:none!important;}
-  #deepReport{display:block!important;}
-  .deep-badge{color:#1a1a1a!important;border-color:#ccc!important;}
-  .player-name{color:#1a1a1a!important;}
-  .score-num{color:#1a1a1a!important;}
-  .deep-scout-text p{color:#1a1a1a!important;line-height:1.8!important;}
-  canvas{display:none!important;}
-  svg{display:none!important;}
+  /* 기본 배경/색상 */
+  body { background: #fff !important; color: #1a1a1a !important; }
+
+  /* deepReport를 제외한 모든 화면 숨기기 */
+  #upload, #analysisScreen, #deepLoading, #result, #revisit,
+  #emailModal, #inputFormScreen, #report { display: none !important; }
+
+  /* deepReport만 표시 */
+  #deepReport { display: block !important; }
+
+  /* 탭 네비게이션, 버튼류 전부 숨기기 */
+  .deep-nav, .page-nav-row, .page-next-btn, .page-prev-btn,
+  #navBtn1, #navBtn2, #navBtn3, #navBtn4, #navBtn5,
+  .header, .grid-bg, #ksFooter, #ksHeader,
+  #loadingWarning, .upsell-banner, .upsell-modal,
+  .email-modal-wrap, #codeBoxSection, #agentContactSection,
+  button, .btn-s, .btn-p, .start-btn,
+  #deepPage1 .deep-badge { display: none !important; }
+
+  /* 모든 deepPage 펼치기 */
+  .deep-page { display: block !important; page-break-after: always; }
+  #deepPage5 { page-break-after: auto; }
+
+  /* 섹션 스타일 */
+  .deep-section {
+    break-inside: avoid;
+    border: 1px solid #ddd !important;
+    background: #f9f9f9 !important;
+    border-radius: 4px;
+    padding: 12px !important;
+    margin-bottom: 12px !important;
+  }
+  .deep-section-title { color: #1a1a1a !important; font-weight: bold; }
+  .deep-scout-text p { color: #1a1a1a !important; line-height: 1.8 !important; }
+  .player-name { color: #1a1a1a !important; }
+  .score-num { color: #1a1a1a !important; }
+  .deep-badge { color: #1a1a1a !important; border-color: #ccc !important; }
+
+  /* Canvas/SVG 숨기기 */
+  canvas { display: none !important; }
+  svg { display: none !important; }
+
+  /* 화면 전체 표시 */
+  .screen { display: block !important; }
 }
 </style>
 </head>
@@ -2968,12 +2988,12 @@ function getUpsellMent(score) {
     sub: '약점 한 개가 전체 점수를 깎고 있습니다. 심층 보고서에서 정확히 짚어드립니다.'
   };
   if (score >= 58) return {
-    title: '이 보고서를 사지 않아도 됩니다.',
+    title: '지금 모르면, 4주 후에도 똑같습니다.',
     sub: '다만 4주 뒤 똑같은 점수 나왔을 때 후회하지 마세요. 개선 포인트는 명확합니다.'
   };
   return {
-    title: '데이터는 솔직합니다. 하지만 개선 가능성도 명확하게 보입니다.',
-    sub: '어디서부터 시작해야 하는지, 심층 보고서가 구체적으로 알려드립니다.'
+    title: '당신의 진짜 실력, 아직 아무도 모릅니다.',
+    sub: '심층 보고서는 FIFA 에이전트 시각으로 당신의 가능성과 한계를 정확히 짚어드립니다.'
   };
 }
 
@@ -4064,13 +4084,18 @@ async function generateDeepReport() {
           });
           var _rj = JSON.stringify(saveData).slice(0, 8000);
           var _rb = btoa(unescape(encodeURIComponent(_rj)));
-          var rParams = new URLSearchParams({
+          var rBody = new URLSearchParams({
             action: 'saveReport', code: lastCode,
             name: p.name, score: lastScore, grade: gradeOf(lastScore),
             reportJson: _rb, encoded: 'base64'
           });
-          console.log('[KS] 보고서 저장. 코드:', lastCode);
-          fetch(APPS_SCRIPT_URL + '?' + rParams.toString(), { mode: 'no-cors' });
+          console.log('[KS] 보고서 저장. 코드:', lastCode, '크기:', _rj.length);
+          fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: rBody.toString()
+          });
         } catch(se) { console.warn('saveReport 실패:', se); }
       }
 
@@ -4393,7 +4418,13 @@ function renderDeepReport(data, m, p, pg) {
   if (p1aa) {
     var p1txt = data.agentAnalysis || data.scout || '';
     if (p1txt) {
-      p1aa.innerHTML = '<p>' + p1txt.split('\n').join('</p><p>') + '</p>';
+      // ①②③ 앞에 줄바꿈 추가
+      var p1formatted = p1txt
+        .replace(/①/g, '\n①')
+        .replace(/②/g, '\n②')
+        .replace(/③/g, '\n③')
+        .trim();
+      p1aa.innerHTML = '<p>' + p1formatted.split('\n').filter(Boolean).join('</p><p>') + '</p>';
     }
   }
 
@@ -4658,26 +4689,15 @@ function printReport() {
 }
 
 function printDeepReport() {
-  // 모든 페이지 표시
+  // 1~5장 모두 펼치기
   for (let i = 1; i <= 5; i++) {
-    const p = document.getElementById('deepPage' + i);
-    if (p) { p.style.display = 'block'; p.setAttribute('data-print', '1'); }
+    const pg = document.getElementById('deepPage' + i);
+    if (pg) pg.style.display = 'block';
   }
-  // 탭 네비게이션, 버튼 등 숨기기
-  const hideEls = document.querySelectorAll(
-    '.deep-nav, .page-nav-row, .page-next-btn, .page-prev-btn, ' +
-    '#loadingWarning, .upsell-banner, .deep-loading-steps, ' +
-    '.email-modal-wrap, #codeBoxSection button, #agentContactSection'
-  );
-  hideEls.forEach(el => { el.dataset.printHide = '1'; el.style.display = 'none'; });
-
+  // @media print CSS가 불필요 요소를 자동으로 숨김
   window.print();
-
-  // 인쇄 후 복원
-  setTimeout(() => {
-    hideEls.forEach(el => { delete el.dataset.printHide; el.style.display = ''; });
-    showPage(1);
-  }, 500);
+  // 인쇄 후 1장으로 복귀
+  setTimeout(() => showPage(1), 500);
 }
 
 // ================================================================
