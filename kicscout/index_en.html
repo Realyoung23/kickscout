@@ -1649,6 +1649,8 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
 // CONFIG — Set your keys here
 // ================================================================
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIqRbayLQRpDFiBhYQo4hvAmdkwjzc_GYawLiE41uC0lr_6cvG-9T9lJ-5Wz5ZDHM-pQ/exec';
+// Ranking endpoint — uses the KR Apps Script which has the action=ranking handler implemented
+const RANKING_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-2j_oxGVrfoElqlhUzo8lsEcSm7gJXzi4WXxpbyGwN5Vl9u80mEFN3Y0jcmWUhw-uiQ/exec';
 const APPS_SCRIPT_TOKEN = 'ks2026' + 'secure' + 'token';
 const CLAUDE_API_KEY  = '';  // Handled by Netlify Function — leave blank here
 const PAYPAL_CLIENT_ID = 'YOUR_PAYPAL_CLIENT_ID'; // Set your PayPal client ID here
@@ -3248,7 +3250,7 @@ async function loadRanking(myScore, myPos) {
   if (!listEl) return;
 
   try {
-    const resp = await fetch(APPS_SCRIPT_URL + '?action=ranking', { mode: 'cors' });
+    const resp = await fetch(RANKING_APPS_SCRIPT_URL + '?action=ranking', { mode: 'cors' });
     const data = await resp.json();
 
     if (!data.ranking || data.ranking.length === 0) {
