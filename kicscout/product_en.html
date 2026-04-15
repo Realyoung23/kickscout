@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Product | KickScout — AI Football Scouting</title>
+<meta name="description" content="KickScout AI analyzes your football performance using biomechanics data — speed, balance, joint angles — and generates a FIFA agent-grade report."/>
+<style>
+  :root {
+    --bg: #040608;
+    --surface: #0d1117;
+    --border: rgba(255,255,255,.08);
+    --text: rgba(255,255,255,.85);
+    --muted: rgba(255,255,255,.4);
+    --accent: #00e5a0;
+    --accent2: #00aaff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace, sans-serif;
+    line-height: 1.8;
+  }
+  a { color: var(--accent); text-decoration: none; }
+
+  /* NAV */
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 4px;
+    color: var(--accent);
+  }
+  .nav-cta {
+    padding: 8px 20px;
+    background: var(--accent);
+    color: #040608;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    border-radius: 3px;
+  }
+
+  /* HERO */
+  .hero {
+    max-width: 800px;
+    margin: 80px auto;
+    padding: 0 32px;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    border: 1px solid rgba(0,229,160,.3);
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 6vw, 64px);
+    letter-spacing: 3px;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    color: #fff;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    font-size: 14px;
+    color: var(--muted);
+    max-width: 560px;
+    margin: 0 auto 36px;
+    line-height: 1.9;
+  }
+  .hero-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-primary {
+    padding: 14px 32px;
+    background: var(--accent);
+    color: #040608;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    border-radius: 3px;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-secondary {
+    padding: 14px 32px;
+    background: transparent;
+    color: var(--text);
+    font-size: 12px;
+    letter-spacing: 2px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+
+  /* HOW IT WORKS */
+  .section {
+    max-width: 900px;
+    margin: 80px auto;
+    padding: 0 32px;
+  }
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .section h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 40px;
+  }
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+  }
+  .step-num {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .step h3 {
+    font-size: 14px;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .step p { font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+  /* WHAT YOU GET */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .feature {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+  }
+  .feature-icon { font-size: 24px; margin-bottom: 12px; }
+  .feature h3 { font-size: 13px; color: var(--accent2); margin-bottom: 8px; font-weight: 700; }
+  .feature p { font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+  /* PRICING */
+  .price-card {
+    background: var(--surface);
+    border: 1px solid rgba(0,229,160,.3);
+    border-radius: 8px;
+    padding: 40px;
+    max-width: 480px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .price-tag {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    line-height: 1;
+    margin: 16px 0;
+  }
+  .price-tag span { font-size: 24px; }
+  .price-desc { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+  .price-list {
+    list-style: none;
+    text-align: left;
+    margin-bottom: 32px;
+  }
+  .price-list li {
+    font-size: 12px;
+    color: var(--text);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .price-list li::before { content: '✓ '; color: var(--accent); }
+
+  /* FAQ */
+  .faq-item {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+  }
+  .faq-q { font-size: 13px; color: #fff; margin-bottom: 8px; font-weight: 700; }
+  .faq-a { font-size: 12px; color: var(--muted); line-height: 1.8; }
+
+  /* FOOTER */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 32px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.9;
+    letter-spacing: 0.5px;
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">KICKSCOUT</div>
+  <a href="/" class="nav-cta">TRY FOR FREE →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">⚽ FIFA-Licensed Agent Analysis</div>
+  <h1>Your Football Performance,<br><span>Analyzed by AI.</span></h1>
+  <p>
+    Upload a 30–90 second training video. Our AI measures your speed, balance,
+    joint angles, and movement patterns — then generates a report written from
+    a FIFA agent's perspective.
+  </p>
+  <div class="hero-btns">
+    <a href="/" class="btn-primary">START FREE ANALYSIS →</a>
+    <a href="#how-it-works" class="btn-secondary">SEE HOW IT WORKS</a>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how-it-works">
+  <div class="section-label">Process</div>
+  <h2>How It Works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">STEP 01</div>
+      <h3>Upload Your Video</h3>
+      <p>A 30–90 second clip of you training or playing. Full-body visible. No special equipment needed.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 02</div>
+      <h3>AI Analyzes Your Body</h3>
+      <p>Our MediaPipe-powered engine measures knee angles, balance, sprint count, top speed, and 15+ biomechanical indicators in real time.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 03</div>
+      <h3>Free Report Unlocked</h3>
+      <p>See your overall score, grade, and key performance summary — completely free.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 04</div>
+      <h3>Get the Deep Report</h3>
+      <p>Unlock the full 5-chapter agent report: position analysis, injury risk, scout evaluation, and a 6-week training plan.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT YOU GET -->
+<section class="section">
+  <div class="section-label">Deep Report Contents</div>
+  <h2>What's in Your Report</h2>
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">🎯</div>
+      <h3>Position Fit Analysis</h3>
+      <p>Is your current position the right one? The AI evaluates whether your physical data matches your role — and recommends alternatives.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">⚡</div>
+      <h3>Core Diagnosis</h3>
+      <p>Your #1 strength, #1 weakness, and the single most important thing to fix right now — based entirely on your data.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🦵</div>
+      <h3>Biomechanical Analysis</h3>
+      <p>Joint angles, asymmetries, injury risk zones — explained in plain terms with real match scenarios.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🔭</div>
+      <h3>Scout Evaluation</h3>
+      <p>Which league level can you realistically compete in? What conditions would allow you to move up? Written from a FIFA agent's perspective.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📋</div>
+      <h3>6-Week Training Plan</h3>
+      <p>Specific drills, sets, reps, and a weekly schedule — all tied to your actual measurement data.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📊</div>
+      <h3>League Comparison</h3>
+      <p>See where you stand vs. amateur, semi-pro, and K3/K4 League benchmarks across 6 performance dimensions.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section">
+  <div class="section-label">Pricing</div>
+  <h2>Simple, One-Time Payment</h2>
+  <div class="price-card">
+    <div style="font-size:11px;letter-spacing:2px;color:var(--muted);">DEEP ANALYSIS REPORT</div>
+    <div class="price-tag"><span>$</span>7.99</div>
+    <div class="price-desc">One report · No subscription · Yours to keep</div>
+    <ul class="price-list">
+      <li>Full 5-chapter AI report</li>
+      <li>Position fit + scout evaluation</li>
+      <li>Biomechanical injury risk analysis</li>
+      <li>6-week personalized training plan</li>
+      <li>Unique report code for re-access</li>
+      <li>PDF export</li>
+    </ul>
+    <a href="/" class="btn-primary" style="display:block;text-align:center;">GET YOUR REPORT →</a>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section">
+  <div class="section-label">FAQ</div>
+  <h2>Common Questions</h2>
+
+  <div class="faq-item">
+    <div class="faq-q">What kind of video should I upload?</div>
+    <div class="faq-a">A 30–90 second clip where your full body is visible — training drills, jogging, or match footage. Filmed from the side or slightly diagonal works best.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Is my video stored or shared?</div>
+    <div class="faq-a">No. Your video is processed entirely in your browser and never uploaded to any server. Only the extracted numerical data is used to generate your report.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">How long does the deep report take?</div>
+    <div class="faq-a">Typically 1–3 minutes. The AI makes 4 sequential API calls to build each section of your report in depth.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Can I access my report later?</div>
+    <div class="faq-a">Yes. Each report comes with a unique code. Enter it at the Report Lookup page to view your full report again anytime.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Who creates the analysis?</div>
+    <div class="faq-a">The report is generated by Claude AI (Anthropic) guided by our FIFA-licensed agent (License #202405-6014) through a custom analysis framework built on biomechanical research.</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  Business: KickScout &nbsp;|&nbsp; Rep: Jaeyoung Ahn &nbsp;|&nbsp; Reg No: 153-33-01752<br>
+  Address: 17 Beobwonnam-ro 9beon-gil, Yeonje-gu, Busan, South Korea &nbsp;|&nbsp; Tel: 070-8080-4317<br>
+  <a href="/refund-en" style="color:var(--muted);font-size:10px;">Refund Policy</a>
+  &nbsp;·&nbsp;
+  <a href="/policy" style="color:var(--muted);font-size:10px;">Privacy Policy</a>
+</footer>
+
+</body>
+</html>
