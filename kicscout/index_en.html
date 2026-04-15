@@ -2716,7 +2716,7 @@ async function lookupCode() {
 
   try {
     // Step 1: Attempt full deep report lookup
-    var resp = await fetch(APPS_SCRIPT_URL + '?action=getReport&code=' + encodeURIComponent(code));
+    var resp = await fetch(APPS_SCRIPT_URL + '?action=getReport&lang=EN&code=' + encodeURIComponent(code));
     var result = await resp.json();
 
     if (result.status === 'ok' && result.reportJson) {
@@ -2748,7 +2748,7 @@ async function lookupCode() {
     }
 
     // Step 2: Only basic record found
-    var resp2 = await fetch(APPS_SCRIPT_URL + '?action=lookup&code=' + encodeURIComponent(code));
+    var resp2 = await fetch(APPS_SCRIPT_URL + '?action=lookup&lang=EN&code=' + encodeURIComponent(code));
     var data2 = await resp2.json();
 
     if (data2.status === 'ok' && data2.record) {
