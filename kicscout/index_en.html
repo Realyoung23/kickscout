@@ -738,7 +738,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
         <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--accent2);letter-spacing:1px;margin-bottom:3px;">📋 Have a previous report?</div>
         <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);">Enter your report code to access your deep report again.</div>
       </div>
-      <button onclick="window.open('/lookup_en','_blank')" style="padding:10px 20px;background:transparent;border:1px solid rgba(0,170,255,.4);color:var(--accent2);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;border-radius:3px;cursor:pointer;white-space:nowrap;flex-shrink:0;">View with Code →</button>
+      <button onclick="window.open('/lookup_en.html','_blank')" style="padding:10px 20px;background:transparent;border:1px solid rgba(0,170,255,.4);color:var(--accent2);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;border-radius:3px;cursor:pointer;white-space:nowrap;flex-shrink:0;">View with Code →</button>
     </div>
   </div>
 
@@ -4100,7 +4100,7 @@ async function generateDeepReport() {
               'Accel ' + (m.accelCount||0) + 'x / Decel ' + (m.decelCount||0) + 'x | Sprint Ratio ' + (m.sprintRatio||0) + '%'
             ].join('\n')
           });
-          var _rj = JSON.stringify(saveData).slice(0, 8000);
+          var _rj = JSON.stringify(saveData).slice(0, 40000);
           var _rb = btoa(unescape(encodeURIComponent(_rj)));
           var rBody = new URLSearchParams({
             action: 'saveReport', code: lastCode,
