@@ -172,7 +172,7 @@
 </div>
 
 <script>
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-2j_oxGVrfoElqlhUzo8lsEcSm7gJXzi4WXxpbyGwN5Vl9u80mEFN3Y0jcmWUhw-uiQ/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIqRbayLQRpDFiBhYQo4hvAmdkwjzc_GYawLiE41uC0lr_6cvG-9T9lJ-5Wz5ZDHM-pQ/exec';
 
 async function fetchReport() {
   var code = document.getElementById('codeInput').value.trim().toUpperCase();
@@ -190,7 +190,7 @@ async function fetchReport() {
   statusEl.className = 'status';
 
   try {
-    var resp = await fetch(APPS_SCRIPT_URL + '?action=getReport&code=' + encodeURIComponent(code));
+    var resp = await fetch(APPS_SCRIPT_URL + '?action=getReport&lang=EN&code=' + encodeURIComponent(code));
     var result = await resp.json();
 
     if (result.status === 'ok' && result.reportJson) {
