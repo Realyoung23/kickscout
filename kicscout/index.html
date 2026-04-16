@@ -507,7 +507,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
   box-shadow:0 0 8px color-mix(in srgb,var(--gc) 40%,transparent);font-weight:700;font-size:10px;}
 .grade-arrow{color:var(--muted);font-size:12px;opacity:.4;}
 
-/* ===== 입력 폼 (결제 직전) ===== */
+/* ===== 입력 폼 ===== */
 .form-q{font-family:'GPZ쾌청','Bebas Neue',sans-serif;font-size:20px;
   letter-spacing:1px;margin-bottom:16px;line-height:1.4;}
 .form-options{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
@@ -1064,7 +1064,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
         </div>
       </div>
       <div class="upsell-preview">
-        <div class="upsell-preview-title">미리보기 (결제 후 잠금 해제)</div>
+        <div class="upsell-preview-title">미리보기 (심층 보고서에서 확인)</div>
         <div class="blur-item"><div class="blur-item-text">포지션 적합도: ST 72% → LW 89% ↑</div></div>
         <div class="blur-item"><div class="blur-item-text">FIFA 기준 최고속도: 상위 31%</div></div>
         <div class="blur-item"><div class="blur-item-text">훈련처방 #1: 햄스트링 편심성 강화</div></div>
@@ -1077,17 +1077,11 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
         <div style="margin-top:10px;text-align:center;">
           <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);
             letter-spacing:1px;margin-bottom:6px;">
-            ⚡ 오직 100명에게만 주는 혜택 · 당신의 실력을 정밀하게 검증합니다
-          </div>
-          <div id="upsellTimer" style="font-family:'GPZ쾌청','Bebas Neue',sans-serif;
-            font-size:22px;color:var(--warn);letter-spacing:2px;">03:00</div>
-          <div id="upsellTimerExpired" style="display:none;font-family:'IBM Plex Mono',monospace;
-            font-size:10px;color:var(--muted);letter-spacing:1px;">
-            ※ 베타 특가 종료 — 정상가 19,900원 적용
+            ⚡ 당신의 실력을 정밀하게 검증합니다
           </div>
         </div>
       </div>
-      <button class="pay-btn" onclick="showDarkPattern()">
+      <button class="pay-btn" onclick="showDeepIntro()">
         <span>🔓</span><span>심층 보고서 받기</span>
       </button>
     </div>
@@ -1098,7 +1092,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
   </div>
 </div>
 
-<!-- 선수 입력 폼 (결제 직전) -->
+<!-- 선수 입력 폼 -->
 <div id="inputFormScreen" class="screen">
   <div style="max-width:600px;margin:0 auto;padding:36px 24px;">
 
@@ -1177,7 +1171,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
         padding:10px 18px;border-radius:3px;cursor:pointer;">← 이전</button>
       <div></div>
       <div id="formSubmitArea" style="display:none;text-align:center;">
-        <button id="formSubmitBtn" onclick="openPayModal()"
+        <button id="formSubmitBtn" onclick="startPayment()"
           style="background:var(--accent);border:none;color:#040608;
           font-family:'GPZ쾌청','Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;
           padding:14px 32px;border-radius:3px;cursor:pointer;width:100%;">
@@ -1190,7 +1184,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
 </div>
 
 <!-- B1: 전환 화면 -->
-<div id="darkPatternScreen" class="screen">
+<div id="deepIntroScreen" class="screen">
   <div style="max-width:520px;margin:0 auto;padding:48px 24px;text-align:center;">
     <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--warn);
       letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;">⚠️ 분석 결과 알림</div>
@@ -1236,41 +1230,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
   </div>
 </div>
 
-<!-- B2: 가격 모달 팝업 -->
-<div id="payModal" style="display:none;position:fixed;inset:0;z-index:9999;
-  background:rgba(4,6,8,.92);backdrop-filter:blur(8px);
-  align-items:center;justify-content:center;padding:20px;">
-  <div style="background:var(--card);border:1px solid var(--border2);border-radius:8px;
-    max-width:400px;width:100%;padding:32px 24px;text-align:center;position:relative;">
-    <button onclick="closePayModal()" style="position:absolute;top:14px;right:16px;
-      background:transparent;border:none;color:var(--muted);font-size:18px;cursor:pointer;">✕</button>
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--accent);
-      letter-spacing:3px;margin-bottom:12px;">KICKSCOUT PREMIUM</div>
-    <div style="font-family:'GPZ쾌청','Bebas Neue',sans-serif;font-size:clamp(20px,5vw,28px);
-      letter-spacing:2px;line-height:1.3;margin-bottom:8px;">
-      전문가는 당신을<br>어떻게 분석했을까요?
-    </div>
-    <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:20px;">
-      FIFA 공인 에이전트 기준의 심층 보고서.<br>지금 바로 당신의 잠재력을 확인하세요.
-    </div>
-    <div style="margin-bottom:6px;">
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;
-        text-decoration:line-through;color:var(--muted);">19,900원</span>
-      <span style="font-family:'GPZ쾌청','Bebas Neue',sans-serif;font-size:40px;
-        color:var(--accent);margin-left:8px;">9,900원</span>
-    </div>
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);
-      margin-bottom:4px;letter-spacing:1px;">베타 출시 특가 · VAT 포함</div>
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--warn);
-      margin-bottom:16px;letter-spacing:1px;">⚠️ 정식 출시 후 19,900원 예정</div>
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);
-      margin-bottom:14px;">⚡ 첫 100명 한정 특가</div>
-    <button onclick="closePayModal();submitFormAndPay();" style="width:100%;padding:15px;
-      background:var(--accent);border:none;color:#040608;
-      font-family:'GPZ쾌청','Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;
-      border-radius:3px;cursor:pointer;">결제하고 심층 보고서 받기 →</button>
-  </div>
-</div>
+<!-- payModal 제거됨 (무료 테스트 버전) -->
 
 <!-- DEEP LOADING -->
 <div id="deepLoading" class="screen">
@@ -2742,7 +2702,7 @@ async function lookupCode() {
       errEl.style.color = 'var(--accent)';
       errEl.textContent = '✅ 기본 기록 확인 — 이름: ' + data2.record.name
         + ' · 점수: ' + data2.record.score + '점 · 날짜: ' + data2.record.date
-        + '\n\n심층 보고서 전체를 불러오려면 결제 시 발급된 보고서 코드가 필요합니다.';
+        + '\n\n심층 보고서 전체를 불러오려면 발급된 보고서 코드가 필요합니다.';
     } else {
       errEl.textContent = '코드를 찾을 수 없습니다. 다시 확인해주세요.';
     }
@@ -2985,8 +2945,8 @@ function getUpsellMent(score) {
     sub: '약점 한 개가 전체 점수를 깎고 있습니다. 심층 보고서에서 정확히 짚어드립니다.'
   };
   if (score >= 58) return {
-    title: '지금 모르면, 4주 후에도 똑같습니다.',
-    sub: '다만 4주 뒤 똑같은 점수 나왔을 때 후회하지 마세요. 개선 포인트는 명확합니다.'
+    title: '개선 포인트가 명확하게 보입니다.',
+    sub: '심층 보고서에서 구체적인 개선 방향과 훈련 플랜을 확인할 수 있습니다.'
   };
   return {
     title: '당신의 진짜 실력, 아직 아무도 모릅니다.',
@@ -3430,23 +3390,23 @@ function submitFormAndPay() {
     const checked = [...document.querySelectorAll(`input[name="q${i}"]:checked`)];
     if (checked.length > 1) FORM_ANSWERS['q'+i] = checked.map(c=>c.value).join(', ');
   }
-  // 결제 실행
+  // 심층 보고서 생성
   startPayment();
 }
 
 // ================================================================
 // ================================================================
-// B1: 전환 화면 + B2: 가격 모달
+// B1: 전환 화면
 // ================================================================
-function showDarkPattern() {
+function showDeepIntro() {
   var s = parseFloat(lastScore) || 0;
   var el = document.getElementById('dpTitle');
   if (el) {
     if (s >= 75) el.innerHTML = '가능성이 보입니다.<br>하지만 아직 모르는 게 있습니다.';
     else if (s >= 60) el.innerHTML = '하지만 개선해야 할<br>부분이 있습니다.';
-    else el.innerHTML = '이 데이터에서<br>놓치고 있는 게 있습니다.';
+    else el.innerHTML = '이 데이터에서<br>더 분석할 수 있는 데이터가 있습니다.';
   }
-  showScreen('darkPatternScreen');
+  showScreen('deepIntroScreen');
 }
 
 function openPayModal() {
@@ -3611,7 +3571,7 @@ function updateAgentCTA5(score) {
 // ================================================================
 
 // B1: 전환 화면
-function showDarkPattern() {
+function showDeepIntro() {
   var s = parseFloat(lastScore) || 0;
   var title = document.getElementById('dpTitle');
   if (title) {
@@ -3620,10 +3580,10 @@ function showDarkPattern() {
     } else if (s >= 60) {
       title.innerHTML = '하지만 개선해야 할<br>부분이 있습니다.';
     } else {
-      title.innerHTML = '이 데이터에서<br>놓치고 있는 게 있습니다.';
+      title.innerHTML = '이 데이터에서<br>더 분석할 수 있는 데이터가 있습니다.';
     }
   }
-  showScreen('darkPatternScreen');
+  showScreen('deepIntroScreen');
 }
 
 // B2: 가격 모달 열기/닫기
@@ -3866,40 +3826,12 @@ async function sendToSheets(metrics, player, score, grade, paid = false, email =
 // ================================================================
 // PAYMENT — 토스페이먼츠
 // ================================================================
-async function startPayment() {
-  // 결제 처리
-  const _n = (document.getElementById('nameInput').value||'').trim();
-  const _p = document.getElementById('posSelect').value;
-  const _a = parseInt(document.getElementById('ageInput').value)||0;
-
-
-  // 토스페이먼츠 키가 설정되지 않은 경우 데모 모드
-  if (TOSS_CLIENT_KEY === 'YOUR_TOSS_CLIENT_KEY_HERE') {
-    if (confirm('⚡ 데모 모드\n\n토스페이먼츠 키가 아직 설정되지 않았습니다.\n\n심층 보고서를 바로 생성하시겠습니까?')) {
-      // 코드 생성
-      if (!lastCode) lastCode = generateCode();
-      generateDeepReport();
-    }
-    return;
-  }
-  try {
-    const tossPayments = TossPayments(TOSS_CLIENT_KEY);
-    await tossPayments.requestPayment('카드', {
-      amount: 9900,
-      orderId: 'KS-' + Date.now(),
-      orderName: 'KickScout 심층 분석 보고서',
-      customerName: playerInfo.name || '선수',
-      successUrl: window.location.href + '?payment=success',
-      failUrl: window.location.href + '?payment=fail',
-    });
-  } catch(e) {
-    if (e.code !== 'USER_CANCEL') {
-      alert('결제 오류: ' + e.message);
-    }
-  }
+function startPayment() {
+  if (!lastCode) lastCode = generateCode();
+  generateDeepReport();
 }
 
-// URL 파라미터로 결제 성공 감지
+// Legacy URL param detection (kept for compatibility)
 window.addEventListener('load', () => {
   const params = new URLSearchParams(window.location.search);
   if (params.get('payment') === 'success') {
@@ -4086,7 +4018,7 @@ async function generateDeepReport() {
   }
 
 
-  // 이메일 모달 표시 (결제 완료 후)
+  // 이메일 모달 표시 (보고서 생성 완료 후)
   showScreen('deepReport');
   // setTimeout(() => { showEmailModal(); }, 800); // 이메일 팝업 비활성화
   showCodeInReport(); // 팝업 없이 코드 바로 표시
@@ -4220,7 +4152,7 @@ function buildDataContext(m, p, pg, score) {
     }
   }
   return '당신은 FIFA 공인 에이전트(등록번호 202405-6014)다. 20년 경력. 냉정하게 판단한다.\n'
-    + '선수가 9,900원을 내고 전문가의 평가를 원한다. 실제로 도움이 되는 내용만 써라.\n\n'
+    + '선수가 전문가의 평가를 원한다. 실제로 도움이 되는 내용만 써라.\n\n'
     + '=== 실측 데이터 ===\n'
     + '선수: ' + escapeHTML(p.name) + ' | 나이: ' + p.age + '세(' + ageGroup + ') | 포지션: ' + escapeHTML(p.pos) + '(' + pg + ') | 종합점수: ' + parseFloat(score).toFixed(2) + '점\n'
     + '최고속도: ' + m.maxSpeed + 'km/h (' + spStatus + ', 동나이 아마추어 평균 ' + ({FW:24,MF:22,DF:20,GK:16}[pg]||22) + 'km/h)\n'
@@ -4270,7 +4202,7 @@ function buildDeepPrompt(m, p, pg, score) {
   var kneeAsym = Math.abs(m.avgKneeL - m.avgKneeR).toFixed(1);
 
   return '당신은 FIFA 공인 에이전트(등록번호 202405-6014)로서 실제 선수 계약과 이적을 20년간 담당해온 전문가다.\n'
-    + '지금 보고 있는 선수는 9,900원을 내고 냉정한 프로의 평가를 원하는 사람이다.\n'
+    + '지금 보고 있는 선수는 냉정한 프로의 평가를 원하는 사람이다.\n'
     + '이 보고서는 선수가 스스로를 개선하는 데 실제로 도움이 되어야 한다.\n\n'
     + '=== 실측 데이터 ===\n'
     + '선수: ' + escapeHTML(p.name) + ' | 나이: ' + p.age + '세(' + ageGroup + ') | 포지션: ' + escapeHTML(p.pos) + '(' + pg + ') | 종합점수: ' + parseFloat(score).toFixed(2) + '점\n'
@@ -4387,7 +4319,7 @@ function renderDeepReport(data, m, p, pg) {
   // 1장 헤더
   document.getElementById('drName').textContent = p.name;
   document.getElementById('drScore').textContent = typeof score === 'number' ? score.toFixed(2) : score;
-  document.getElementById('drGrade').textContent = gradeOf(score) + ' · PREMIUM';
+  document.getElementById('drGrade').textContent = gradeOf(score) + ' · DEEP ANALYSIS';
   document.getElementById('drMeta').innerHTML =
     `<span class="meta-tag">${escapeHTML(p.pos)}</span><span class="meta-tag">나이 ${p.age}</span>`;
 
@@ -4722,7 +4654,7 @@ function startLoadingWarnings() {
   var msgs = [
     '⏱ 보고서 작성에는 1~3분 정도 소요됩니다',
     '⚠️ 절대 새로고침하지 마세요 — 보고서가 사라집니다',
-    '📵 뒤로가기도 금물입니다 — 결제가 낭비됩니다',
+    '📵 뒤로가기도 금물입니다 — 보고서가 사라집니다',
     '☕ 잠깐 커피 한 잔 하고 오세요 (화면은 켜두고)',
     '⏱ AI가 열심히 쓰는 중... 조금만 더 기다려주세요',
     '🔒 페이지를 벗어나면 보고서를 다시 받기 어렵습니다',
