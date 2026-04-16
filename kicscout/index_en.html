@@ -1176,7 +1176,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
         padding:10px 18px;border-radius:3px;cursor:pointer;">← Back</button>
       <div></div>
       <div id="formSubmitArea" style="display:none;text-align:center;">
-        <button id="formSubmitBtn" onclick="openPayModal()"
+        <button id="formSubmitBtn" onclick="startPayment()"
           style="background:var(--accent);border:none;color:#040608;
           font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;
           padding:14px 32px;border-radius:3px;cursor:pointer;width:100%;">
@@ -3931,8 +3931,8 @@ function demoPayment() {
 }
 
 function startPayment() {
-  renderPayPalButton();
-  openPayModal();
+  if (!lastCode) lastCode = generateCode();
+  generateDeepReport();
 }
 
 // Legacy URL param detection (kept for compatibility)
