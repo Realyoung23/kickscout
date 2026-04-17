@@ -1608,8 +1608,7 @@ body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;min
 // ================================================================
 // CONFIG — 여기에 키를 넣으세요
 // ================================================================
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-2j_oxGVrfoElqlhUzo8lsEcSm7gJXzi4WXxpbyGwN5Vl9u80mEFN3Y0jcmWUhw-uiQ/exec';
-const APPS_SCRIPT_TOKEN = 'ks2026' + 'secure' + 'token';
+const APPS_SCRIPT_PROXY = '/.netlify/functions/appscript';
 const CLAUDE_API_KEY  = '';  // Netlify Function에서 처리 — 여기엔 입력 불필요
 const TOSS_CLIENT_KEY = 'test_gck_24xLea5zVAa76XmWgkDKVQAMYNwW'; // 토스페이먼츠 승인 후 입력
 
@@ -2662,7 +2661,7 @@ async function lookupCode() {
 
   try {
     // 1단계: 심층 보고서 전체 조회 시도
-    var resp = await fetch(APPS_SCRIPT_URL + '?action=getReport&code=' + encodeURIComponent(code));
+    var resp = await fetch(APPS_SCRIPT_PROXY + '?action=getReport&code=' + encodeURIComponent(code));
     var result = await resp.json();
 
     if (result.status === 'ok' && result.reportJson) {
@@ -2694,7 +2693,7 @@ async function lookupCode() {
     }
 
     // 2단계: 기본 기록만 있는 경우
-    var resp2 = await fetch(APPS_SCRIPT_URL + '?action=lookup&code=' + encodeURIComponent(code));
+    var resp2 = await fetch(APPS_SCRIPT_PROXY + '?action=lookup&code=' + encodeURIComponent(code));
     var data2 = await resp2.json();
 
     if (data2.status === 'ok' && data2.record) {
@@ -3200,7 +3199,7 @@ async function loadRanking(myScore, myPos) {
   if (!listEl) return;
 
   try {
-    const resp = await fetch(APPS_SCRIPT_URL + '?action=ranking', { mode: 'cors' });
+    const resp = await fetch(APPS_SCRIPT_PROXY + '?action=ranking');
     const data = await resp.json();
 
     if (!data.ranking || data.ranking.length === 0) {
@@ -3544,14 +3543,13 @@ function submitAgentContact() {
     action: 'agentContact',
     email: email,
     message: msg,
-    _t: APPS_SCRIPT_TOKEN,
     name: (playerInfo && playerInfo.name) ? playerInfo.name : '익명',
     pos: (playerInfo && playerInfo.pos) ? playerInfo.pos : '-',
     score: lastScore || 0,
     grade: gradeOf(lastScore || 0),
     code: lastCode || '-'
   });
-  fetch(APPS_SCRIPT_URL + '?' + params.toString(), { mode: 'no-cors' });
+  fetch(APPS_SCRIPT_PROXY + '?' + params.toString());
   var done = document.getElementById('agentContactDone');
   if (done) done.style.display = 'block';
   if (btn) btn.style.display = 'none';
@@ -3720,12 +3718,11 @@ async function submitAgentContact() {
       email: email, message: msg,
       name: (playerInfo && playerInfo.name) || '익명',
       pos: (playerInfo && playerInfo.pos) || '-',
-      _t: APPS_SCRIPT_TOKEN,
       score: lastScore || 0,
       grade: gradeOf(lastScore || 0),
       code: lastCode || '-'
     });
-    fetch(APPS_SCRIPT_URL + '?' + params.toString(), { mode: 'no-cors' });
+    fetch(APPS_SCRIPT_PROXY + '?' + params.toString());
     var done = document.getElementById('agentContactDone');
     if (done) done.style.display = 'block';
     if (btn) btn.style.display = 'none';
@@ -3812,11 +3809,10 @@ async function sendToSheets(metrics, player, score, grade, paid = false, email =
       email: email || '',
       newsletter: newsletter ? 'Y' : 'N',
       code: code || '',
-      reportDone: reportDone,
-      _t: APPS_SCRIPT_TOKEN
+      reportDone: reportDone
     });
-    // no-cors GET 요청 (응답 무시, 저장만 목적)
-    fetch(APPS_SCRIPT_URL + '?' + params.toString(), { mode: 'no-cors' });
+    // 프록시를 통해 전송 (응답 무시, 저장만 목적)
+    fetch(APPS_SCRIPT_PROXY + '?' + params.toString());
     console.log('Sheets 전송 시도');
   } catch(e) {
     console.log('Sheets 전송 오류:', e);
@@ -3950,10 +3946,9 @@ async function generateDeepReport() {
         try {
           var doneParams = new URLSearchParams({
             action: 'updateReportDone', code: lastCode || '',
-            _t: APPS_SCRIPT_TOKEN,
             reportDone: 'Y'
           });
-          fetch(APPS_SCRIPT_URL + '?' + doneParams.toString(), { mode: 'no-cors' });
+          fetch(APPS_SCRIPT_PROXY + '?' + doneParams.toString());
         } catch(e) {}
       } else {
         renderFallbackDeepReport(m, p, pg);
@@ -3998,12 +3993,11 @@ async function generateDeepReport() {
           var _rb = btoa(unescape(encodeURIComponent(_rj)));
           var rParams = new URLSearchParams({
             action: 'saveReport', code: lastCode,
-            _t: APPS_SCRIPT_TOKEN,
             name: p.name, score: lastScore, grade: gradeOf(lastScore),
             reportJson: _rb, encoded: 'base64'
           });
           console.log('[KS] 보고서 저장. 코드:', lastCode, '크기:', _rj.length);
-          fetch(APPS_SCRIPT_URL + '?' + rParams.toString(), { mode: 'no-cors' });
+          fetch(APPS_SCRIPT_PROXY + '?' + rParams.toString());
         } catch(se) { console.warn('saveReport 실패:', se); }
       }
 
@@ -4582,10 +4576,9 @@ async function saveReportToSheets(data, p, score, pg) {
       name: p.name || '익명',
       score: score,
       grade: gradeOf(score),
-      reportJson: jsonStr,
-      _t: APPS_SCRIPT_TOKEN
+      reportJson: jsonStr
     });
-    fetch(APPS_SCRIPT_URL + '?' + params.toString(), { mode: 'no-cors' });
+    fetch(APPS_SCRIPT_PROXY + '?' + params.toString());
     console.log('보고서 저장 시도:', code, '크기:', jsonStr.length);
   } catch(e) {
     console.log('보고서 저장 오류:', e);
