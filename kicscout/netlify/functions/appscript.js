@@ -11,10 +11,11 @@ exports.handler = async function(event, context) {
     return { statusCode: 200, headers: CORS_HEADERS, body: '' };
   }
 
-  const SCRIPT_URL = process.env.APPS_SCRIPT_URL;
+  const SCRIPT_URL_KR = process.env.APPS_SCRIPT_URL;
+  const SCRIPT_URL_EN = process.env.APPS_SCRIPT_URL_EN;
   const SCRIPT_TOKEN = process.env.APPS_SCRIPT_TOKEN;
 
-  if (!SCRIPT_URL) {
+  if (!SCRIPT_URL_KR) {
     return {
       statusCode: 500,
       headers: CORS_HEADERS,
@@ -37,6 +38,17 @@ exports.handler = async function(event, context) {
     }
 
     const action = params.get('action') || '';
+    const region = params.get('region') || 'KR';
+
+    // region에 따라 대상 URL 선택 (ranking은 항상 KR)
+    let scriptUrl;
+    if (action === 'ranking') {
+      scriptUrl = SCRIPT_URL_KR;
+    } else if (region === 'EN' && SCRIPT_URL_EN) {
+      scriptUrl = SCRIPT_URL_EN;
+    } else {
+      scriptUrl = SCRIPT_URL_KR;
+    }
 
     // 응답이 필요한 action (cors 호출)
     const needsResponse = ['getReport', 'lookup', 'ranking'].includes(action);
@@ -45,7 +57,7 @@ exports.handler = async function(event, context) {
     const usePOST = ['saveReport', 'save'].includes(action);
 
     if (needsResponse) {
-      const targetUrl = SCRIPT_URL + '?' + params.toString();
+      const targetUrl = scriptUrl + '?' + params.toString();
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 20000);
 
@@ -60,7 +72,7 @@ exports.handler = async function(event, context) {
       };
     } else if (usePOST) {
       // POST body로 전달 — Apps Script doPost가 파싱
-      await fetch(SCRIPT_URL, {
+      await fetch(scriptUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: params.toString()
@@ -72,7 +84,7 @@ exports.handler = async function(event, context) {
       };
     } else {
       // 기타 저장 요청: GET으로 전달
-      await fetch(SCRIPT_URL + '?' + params.toString());
+      await fetch(scriptUrl + '?' + params.toString());
       return {
         statusCode: 200,
         headers: CORS_HEADERS,
