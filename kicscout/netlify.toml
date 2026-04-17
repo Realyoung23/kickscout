@@ -8,3 +8,6 @@
 
 [functions."claude"]
   timeout = 30
+
+[functions."appscript"]
+  timeout = 26
