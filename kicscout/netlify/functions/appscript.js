@@ -37,12 +37,15 @@ exports.handler = async function(event, context) {
     }
 
     const action = params.get('action') || '';
-    const targetUrl = SCRIPT_URL + '?' + params.toString();
 
     // 응답이 필요한 action (cors 호출)
     const needsResponse = ['getReport', 'lookup', 'ranking'].includes(action);
 
+    // 데이터가 큰 action은 POST로 전달 (URL 길이 제한 회피)
+    const usePOST = ['saveReport', 'save'].includes(action);
+
     if (needsResponse) {
+      const targetUrl = SCRIPT_URL + '?' + params.toString();
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 20000);
 
@@ -55,9 +58,21 @@ exports.handler = async function(event, context) {
         headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         body: data
       };
+    } else if (usePOST) {
+      // POST body로 전달 — Apps Script doPost가 파싱
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+      });
+      return {
+        statusCode: 200,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({ status: 'sent' })
+      };
     } else {
-      // 저장 요청: 완료까지 대기 후 응답
-      await fetch(targetUrl);
+      // 기타 저장 요청: GET으로 전달
+      await fetch(SCRIPT_URL + '?' + params.toString());
       return {
         statusCode: 200,
         headers: CORS_HEADERS,

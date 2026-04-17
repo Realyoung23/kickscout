@@ -3997,7 +3997,11 @@ async function generateDeepReport() {
             reportJson: _rb, encoded: 'base64'
           });
           console.log('[KS] 보고서 저장. 코드:', lastCode, '크기:', _rj.length);
-          fetch(APPS_SCRIPT_PROXY + '?' + rParams.toString());
+          fetch(APPS_SCRIPT_PROXY, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: rParams.toString()
+          });
         } catch(se) { console.warn('saveReport 실패:', se); }
       }
 
@@ -4578,7 +4582,11 @@ async function saveReportToSheets(data, p, score, pg) {
       grade: gradeOf(score),
       reportJson: jsonStr
     });
-    fetch(APPS_SCRIPT_PROXY + '?' + params.toString());
+    fetch(APPS_SCRIPT_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
+    });
     console.log('보고서 저장 시도:', code, '크기:', jsonStr.length);
   } catch(e) {
     console.log('보고서 저장 오류:', e);
