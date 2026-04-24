@@ -2467,23 +2467,23 @@ function getPlayerType(stats, pg, score) {
   const dominant = Object.entries(stats).sort((a,b) => b[1]-a[1])[0][0];
   const types = {
     FW: {
-      PAC: { type:'Speed Winger', player:'Hwang Hee-chan', desc:'Aggressive runs and pressing are the hallmarks', emoji:'⚡' },
-      SHT: { type:'Clinical Striker', player:'Son Heung-min', desc:'Lethal in front of goal when chances arrive', emoji:'🎯' },
-      DRI: { type:'Technical Playmaker', player:'Lee Kang-in', desc:'Dribbling genius in tight spaces', emoji:'🪄' },
-      PHY: { type:'Physical Striker', player:'Hwang Ui-jo', desc:'Dominant in aerial duels and physical battles', emoji:'💪' },
-      PAS: { type:'Link-Up Forward', player:'Park Ji-sung', desc:'Outstanding team play and combination passing', emoji:'🔗' },
+      PAC: { type:'Speed Winger', player:'Vinícius Jr.', desc:'Aggressive runs and pressing are the hallmarks', emoji:'⚡' },
+      SHT: { type:'Clinical Striker', player:'Erling Haaland', desc:'Lethal in front of goal when chances arrive', emoji:'🎯' },
+      DRI: { type:'Technical Playmaker', player:'Lionel Messi', desc:'Dribbling genius in tight spaces', emoji:'🪄' },
+      PHY: { type:'Physical Striker', player:'Victor Osimhen', desc:'Dominant in aerial duels and physical battles', emoji:'💪' },
+      PAS: { type:'Link-Up Forward', player:'Karim Benzema', desc:'Outstanding team play and combination passing', emoji:'🔗' },
       DEF: { type:'Press-Forward', player:'Klopp\'s 9', desc:'Active high press and defensive work rate', emoji:'🔥' },
     },
     MF: {
-      PAC: { type:'Box-to-Box', player:'Park Ji-sung', desc:'Wide coverage and relentless engine', emoji:'🏃' },
+      PAC: { type:'Box-to-Box', player:'Jude Bellingham', desc:'Wide coverage and relentless engine', emoji:'🏃' },
       PAS: { type:'Deep Playmaker', player:'Pirlo-style', desc:'Reads the game and dictates tempo', emoji:'🧠' },
-      DRI: { type:'Inside Forward', player:'Lee Kang-in', desc:'Creative in tight spaces', emoji:'🎨' },
+      DRI: { type:'Inside Forward', player:'Bernardo Silva', desc:'Creative in tight spaces', emoji:'🎨' },
       PHY: { type:'Defensive Enforcer', player:'Kanté-style', desc:'Aggressive pressing and ball-winning ability', emoji:'🛡️' },
       DEF: { type:'Defensive Midfielder', player:'Holding Mid', desc:'The team\'s defensive shield', emoji:'🏰' },
       SHT: { type:'Goal-Scoring Mid', player:'Lampard-style', desc:'Box runs and powerful long-range shots', emoji:'💥' },
     },
     DF: {
-      PHY: { type:'Dominant Centre-Back', player:'Kim Min-jae', desc:'Overpowering in aerial duels and physical battles', emoji:'🏰' },
+      PHY: { type:'Dominant Centre-Back', player:'Virgil van Dijk', desc:'Overpowering in aerial duels and physical battles', emoji:'🏰' },
       PAC: { type:'Speedy Full-Back', player:'Alexander-Arnold style', desc:'Fast feet and aggressive overlapping runs', emoji:'⚡' },
       PAS: { type:'Ball-Playing CB', player:'Barça-style CB', desc:'Starts attacks from the back — modern CB', emoji:'🎯' },
       DEF: { type:'Classic Defender', player:'Classic CB', desc:'Excellent positioning and reading of the game', emoji:'🛡️' },
@@ -3245,7 +3245,7 @@ async function loadRanking(myScore, myPos) {
   if (!listEl) return;
 
   try {
-    const resp = await fetch(APPS_SCRIPT_PROXY + '?action=ranking');
+    const resp = await fetch(APPS_SCRIPT_PROXY + '?action=ranking&region=' + REGION + '&lang=' + REGION);
     const data = await resp.json();
 
     if (!data.ranking || data.ranking.length === 0) {
