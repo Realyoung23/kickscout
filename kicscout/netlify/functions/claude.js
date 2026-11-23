@@ -13,7 +13,11 @@
 // ★ 가장 확실한 안전장치는 Anthropic 콘솔(console.anthropic.com)에서 월 사용 한도(spend limit)를 정해 두는 것이다.
 //   이 파일의 제한은 그 한도에 닿기 전에 대부분의 남용을 막기 위한 것이다.
 
-const ALLOWED_MODELS = ['claude-sonnet-4-20250514'];
+// 2026-06-15 에 claude-sonnet-4-20250514 가 종료되어 그 이름으로는 더 이상 호출할 수 없다(호출하면 오류가 나서
+// 심층 리포트가 대체 문구로만 나갔다). 페이지(index.html, index_en.html)는 아직 옛 이름을 보내므로 서버에서 새 모델로 바꿔 부른다.
+const CURRENT_MODEL = 'claude-sonnet-5-5';
+const MODEL_ALIASES = { 'claude-sonnet-4-20250514': CURRENT_MODEL };
+const ALLOWED_MODELS = [CURRENT_MODEL, ...Object.keys(MODEL_ALIASES)];
 const MAX_TOKENS_CAP = 1500;
 const MAX_BODY_CHARS = 60000;
 const MAX_TOTAL_PROMPT_CHARS = 30000;
@@ -58,8 +62,9 @@ function rateLimited(ip, now) {
 // 허용한 모양이면 정리된 요청을, 아니면 null 을 돌려준다.
 function cleanRequest(body) {
   if (!body || typeof body !== 'object') return null;
-  const model = body.model || ALLOWED_MODELS[0];
-  if (!ALLOWED_MODELS.includes(model)) return null;
+  const asked = body.model || CURRENT_MODEL;
+  if (!ALLOWED_MODELS.includes(asked)) return null;
+  const model = MODEL_ALIASES[asked] || asked;
   let maxTokens = Math.floor(Number(body.max_tokens) || 800);
   maxTokens = Math.max(1, Math.min(MAX_TOKENS_CAP, maxTokens));
   const system = body.system == null || body.system === '' ? undefined : body.system;
@@ -112,7 +117,7 @@ exports.handler = async function (event, context) {
     });
     clearTimeout(timeoutId);
     const data = await response.json();
-    if (!response.ok) return json(502, { error: 'Upstream error' });
+    if (!response.ok) return json(502, { error: 'Upstream error', type: data && data.error && data.error.type ? String(data.error.type) : undefined });
     // 페이지가 읽는 것은 content 뿐이다. 그 밖의 값은 돌려주지 않는다.
     return json(200, { content: data.content, stop_reason: data.stop_reason });
   } catch (err) {
